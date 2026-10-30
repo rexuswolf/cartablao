@@ -186,4 +186,25 @@ describe('GameScreen', () => {
         expect(screen.getByRole('timer', { name: '30 seconds left' })).toBeTruthy();
         expect(onGameEnd).not.toHaveBeenCalled();
     });
+
+    it('lists reviewed cards in play order, even after fixing one', () => {
+        const fourCards: GameCard[] = ['Alpha', 'Bravo', 'Charlie', 'Delta'].map((word, id) => ({ id, word, deckId: 'test' }));
+        render(<GameScreen deck={fourCards} teams={teams} config={{ ...config, maxCards: 4 }} onGameEnd={vi.fn()} />);
+
+        // Play four cards: skip, got it, skip, then end the turn on the fourth
+        const played: string[] = [];
+        const shown = () => fourCards.find(card => screen.queryByText(card.word))?.word ?? '';
+        played.push(shown()); skip();
+        played.push(shown()); gotIt();
+        played.push(shown()); skip();
+        played.push(shown());
+        fireEvent.click(screen.getByRole('button', { name: 'End turn early' }));
+
+        const reviewOrder = () =>
+            screen.getAllByRole('button', { name: /\. Tap to mark as/ }).map(button => button.textContent?.replace(/(Got it|Skipped)$/, ''));
+        expect(reviewOrder()).toEqual(played);
+
+        fireEvent.click(screen.getAllByRole('button', { name: /: skipped\. Tap to mark as got it/ })[0]);
+        expect(reviewOrder()).toEqual(played);
+    });
 });

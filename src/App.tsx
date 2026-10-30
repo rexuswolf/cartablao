@@ -56,7 +56,7 @@ function App() {
 		setGameState("finished");
 	}, []);
 
-	// Back to setup with the same teams, rules and decks; reshuffle for new cards
+	// Back to setup with the same rules and decks (teams come from saved storage); reshuffle for new cards
 	const handlePlayAgain = useCallback(() => {
 		setGameRounds([]);
 		setGameDeck([]);
@@ -134,7 +134,6 @@ function App() {
 				<GameSetup
 					deckState={deckState}
 					initialConfig={gameConfig ?? undefined}
-					initialTeams={selectedTeams.length > 0 ? selectedTeams : undefined}
 					onStartGame={handleSetupComplete}
 					onCreateCustomDeck={() => setShowDeckCreator(true)}
 					onShowSavedDecks={() => setShowSavedDecks(true)}

@@ -20,6 +20,7 @@ export interface Turn {
     teamId: string
     skippedCards: GameCard[]
     correctCards: GameCard[]
+    playedCardIds: number[] // Every card shown this turn, in the order it was played
     timeLeft: number
 }
 
@@ -147,6 +148,7 @@ export class Game {
             teamId: currentPlayer.teamId,
             skippedCards: [],
             correctCards: [],
+            playedCardIds: [],
             timeLeft: this.config.secondsPerRound,
         };
 
@@ -161,6 +163,7 @@ export class Game {
         if (!currentCard || !this.currentTurn) return;
 
         this.currentTurn.correctCards.push(currentCard);
+        this.currentTurn.playedCardIds.push(currentCard.id);
 
         // Remove the card from the round's remaining cards
         const currentRound = this.getCurrentRound();
@@ -174,6 +177,7 @@ export class Game {
         if (!currentCard || !this.currentTurn) return;
 
         this.currentTurn.skippedCards.push(currentCard);
+        this.currentTurn.playedCardIds.push(currentCard.id);
 
         // Remove the card from the round's remaining cards
         const currentRound = this.getCurrentRound();
@@ -192,6 +196,7 @@ export class Game {
         const currentCard = this.getCurrentCard();
         if (currentCard) {
             this.currentTurn.skippedCards.push(currentCard);
+            this.currentTurn.playedCardIds.push(currentCard.id);
             // Remove the card from the round's remaining cards
             currentRound.removeCard(currentCard.id);
         }

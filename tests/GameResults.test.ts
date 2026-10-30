@@ -13,9 +13,9 @@ const teams: Team[] = [
 
 const roundWithTurns = () => {
     const round = new Round([], 1);
-    round.addTurn({ playerId: 'ana', teamId: 'red', correctCards: [card(1), card(2)], skippedCards: [card(3)], timeLeft: 0 });
-    round.addTurn({ playerId: 'ben', teamId: 'blue', correctCards: [card(3)], skippedCards: [], timeLeft: 0 });
-    round.addTurn({ playerId: 'ana', teamId: 'red', correctCards: [card(4)], skippedCards: [card(5)], timeLeft: 0 });
+    round.addTurn({ playerId: 'ana', teamId: 'red', correctCards: [card(1), card(2)], skippedCards: [card(3)], playedCardIds: [], timeLeft: 0 });
+    round.addTurn({ playerId: 'ben', teamId: 'blue', correctCards: [card(3)], skippedCards: [], playedCardIds: [], timeLeft: 0 });
+    round.addTurn({ playerId: 'ana', teamId: 'red', correctCards: [card(4)], skippedCards: [card(5)], playedCardIds: [], timeLeft: 0 });
     return round;
 };
 

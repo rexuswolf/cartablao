@@ -32,10 +32,12 @@ export function TurnReview({
 	onContinue,
 	onEndGame,
 }: TurnReviewProps) {
+	// Listed in the order they were played, so fixing a card doesn't move it
+	const playOrder = (cardId: number) => turn.playedCardIds.indexOf(cardId);
 	const cards = [
 		...turn.correctCards.map((card) => ({ card, isCorrect: true })),
 		...turn.skippedCards.map((card) => ({ card, isCorrect: false })),
-	];
+	].sort((a, b) => playOrder(a.card.id) - playOrder(b.card.id));
 	const correctCount = turn.correctCards.length;
 
 	return (

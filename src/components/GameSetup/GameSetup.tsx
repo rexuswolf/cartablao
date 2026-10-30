@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { SAMPLE_TEAMS } from "../../data/teams";
+import { useEffect, useState } from "react";
+import { DEFAULT_TEAMS, loadSavedTeams, saveTeams } from "../../data/teams";
 import type { GameConfig, Team } from "../../Game";
 import type { GameDeckManagerState } from "../../services/GameDeckManager";
 import { getReadableTextColor } from "../../shared/libs/color";
@@ -15,7 +15,6 @@ import styles from "./GameSetup.module.css";
 interface GameSetupProps {
 	deckState: GameDeckManagerState;
 	initialConfig?: GameConfig;
-	initialTeams?: Team[];
 	onStartGame: (config: GameConfig, teams: Team[]) => void;
 	onShowDeckSelector: () => void;
 	onCreateCustomDeck: () => void;
@@ -27,7 +26,6 @@ const TILTS = ["-2deg", "1.5deg", "1deg", "-1.5deg"];
 export function GameSetup({
 	deckState,
 	initialConfig,
-	initialTeams,
 	onStartGame,
 	onShowDeckSelector,
 	onCreateCustomDeck,
@@ -41,6 +39,8 @@ export function GameSetup({
 		getPresetNames,
 		isValid,
 	} = useGameConfig(initialConfig);
+	// Start from the players last used in this browser
+	const [savedTeams] = useState(() => loadSavedTeams() ?? DEFAULT_TEAMS);
 	const {
 		teams,
 		setTeamCount,
@@ -50,10 +50,14 @@ export function GameSetup({
 		movePlayer,
 		balanceTeams,
 		totalPlayers,
-	} = useTeamManager(initialTeams ?? SAMPLE_TEAMS);
+	} = useTeamManager(savedTeams);
 	const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
 	const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
 	const [newPlayerName, setNewPlayerName] = useState("");
+
+	useEffect(() => {
+		saveTeams(teams);
+	}, [teams]);
 
 	const editingTeam = teams.find((team) => team.id === editingTeamId);
 	const allPlayers = teams.flatMap((team) =>
