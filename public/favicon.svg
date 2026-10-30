@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+  <!-- The three rounds as three fanned cards; numbers are left out at icon sizes -->
+  <rect width="240" height="240" rx="54" fill="#ffd23f"/>
+  <g transform="translate(18 30) scale(0.85)" stroke="#1d1a2f" stroke-width="14">
+    <rect x="80" y="44" width="88" height="124" rx="16" fill="#3355ff" transform="rotate(-20 120 220)"/>
+    <rect x="80" y="44" width="88" height="124" rx="16" fill="#ff5b3a"/>
+    <rect x="80" y="44" width="88" height="124" rx="16" fill="#ffffff" transform="rotate(20 120 220)"/>
+  </g>
+</svg>

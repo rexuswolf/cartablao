@@ -136,7 +136,10 @@ function App() {
 	if (gameState === "idle") {
 		return (
 			<MainLayout>
-				<StartScreen onStartGame={startGame} />
+				<StartScreen
+					onStartGame={startGame}
+					onLanguageChange={handleLanguageChange}
+				/>
 			</MainLayout>
 		);
 	}

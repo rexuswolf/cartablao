@@ -6,6 +6,12 @@ import { LanguageProvider } from '../src/shared/i18n/LanguageProvider';
 
 const renderApp = () => render(<LanguageProvider><App /></LanguageProvider>);
 
+// The flag button shows the current language and opens the list of languages
+const chooseLanguage = (current: RegExp, name: string) => {
+    fireEvent.click(screen.getByRole('button', { name: current }));
+    fireEvent.click(screen.getByRole('button', { name }));
+};
+
 const mockBrowserLanguages = (languages: string[]) => {
     vi.spyOn(navigator, 'languages', 'get').mockReturnValue(languages);
     vi.spyOn(navigator, 'language', 'get').mockReturnValue(languages[0] ?? '');
@@ -54,10 +60,11 @@ describe('game language', () => {
         expect(screen.getByText('🌟 Famous People')).toBeTruthy();
         expect(screen.getByText('Red Team')).toBeTruthy();
 
-        fireEvent.click(screen.getByRole('button', { name: 'Español' }));
+        chooseLanguage(/^Language: English/, 'Español');
 
         expect(screen.getByRole('heading', { name: '¿Quién juega?' })).toBeTruthy();
-        expect(screen.getByRole('button', { name: 'Español' }).getAttribute('aria-pressed')).toBe('true');
+        expect(screen.getByRole('button', { name: /^Idioma: Español/ })).toBeTruthy();
+        expect(screen.queryByRole('dialog')).toBeNull();
         expect(screen.getByText('🌟 Famosos')).toBeTruthy();
         expect(screen.getByText('Equipo rojo')).toBeTruthy();
         expect(screen.getByRole('button', { name: '¡A jugar!' })).toBeTruthy();
@@ -78,10 +85,22 @@ describe('game language', () => {
         renderApp();
         fireEvent.click(screen.getByRole('button', { name: 'New game' }));
 
-        fireEvent.click(screen.getByRole('button', { name: 'Español' }));
+        chooseLanguage(/^Language: English/, 'Español');
 
         expect(screen.getByText('The Mimes')).toBeTruthy();
         expect(screen.getByText('Equipo azul')).toBeTruthy();
+    });
+
+    it('can be changed from the start screen before setting up a game', () => {
+        mockBrowserLanguages(['en-US']);
+        renderApp();
+        expect(screen.getByText('Act it out')).toBeTruthy();
+
+        chooseLanguage(/^Language: English/, 'Español');
+
+        expect(screen.getByText('Mímica')).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'Nueva partida' }));
+        expect(screen.getByText('🌟 Famosos')).toBeTruthy();
     });
 
     it('shows deck cards in the game language in the deck picker', () => {

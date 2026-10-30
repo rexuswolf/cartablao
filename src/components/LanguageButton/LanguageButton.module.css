@@ -1,0 +1,59 @@
+/* A round sticker with the flag of the game's language */
+.flagButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 48px;
+	height: 48px;
+	padding: 0;
+	border: var(--border-thin);
+	border-radius: 50%;
+	background: var(--white);
+	box-shadow: var(--shadow-sm);
+	font-size: 24px;
+	line-height: 1;
+	transition: transform 80ms ease, box-shadow 80ms ease;
+}
+
+.flagButton:active {
+	transform: translate(3px, 3px);
+	box-shadow: 0 0 0 var(--ink);
+}
+
+/* Same rows as the team choices in the player sheet */
+.options {
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.option {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	width: 100%;
+	min-height: 56px;
+	padding: 0 14px;
+	border: var(--border-thin);
+	border-radius: var(--radius-sm);
+	background: var(--white);
+	text-align: left;
+}
+
+.current {
+	background: #fff3c4;
+	box-shadow: var(--shadow-sm);
+}
+
+.optionFlag {
+	font-size: 24px;
+	line-height: 1;
+}
+
+.optionName {
+	flex: 1;
+	font-size: 17px;
+	font-weight: 700;
+}

@@ -18,20 +18,24 @@ const en = {
 		es: "Spanish",
 		en: "English",
 	} satisfies Record<DeckLanguageCode, string>,
+	language: {
+		title: "Language",
+		button: (name: string) => `Language: ${name}. Change`,
+	},
 	stepper: {
 		decrease: (label: string) => `Decrease ${label.toLowerCase()}`,
 		increase: (label: string) => `Increase ${label.toLowerCase()}`,
 	},
 	start: {
-		heroCard: "Charades",
-		title: "Act it out. Beat the clock.",
+		// The same cards come back each round, played a harder way
+		rounds: ["Describe", "One word", "Act it out"],
+		title: "Same cards. Harder every round.",
 		subtitle:
-			"One player acts, their team guesses. Swipe right when they get it, left to skip.",
+			"Describe the card, then give just one word, then act it out without a sound. Your team guesses before time runs out.",
 		newGame: "New game",
 	},
 	setup: {
 		title: "Who's playing?",
-		language: "Language",
 		deck: "Deck",
 		decksMixed: (count: number) => `${count} decks mixed`,
 		cardsInPlay: (inPlay: number, total: number) => `${inPlay} of ${total} cards`,
@@ -269,20 +273,23 @@ const es: Translations = {
 		es: "Español",
 		en: "Inglés",
 	},
+	language: {
+		title: "Idioma",
+		button: (name) => `Idioma: ${name}. Cambiar`,
+	},
 	stepper: {
 		decrease: (label) => `Bajar ${label.toLowerCase()}`,
 		increase: (label) => `Subir ${label.toLowerCase()}`,
 	},
 	start: {
-		heroCard: "Mímica",
-		title: "Actúa. Gana al reloj.",
+		rounds: ["Descríbela", "Una palabra", "Mímica"],
+		title: "Mismas cartas. Cada ronda, más difícil.",
 		subtitle:
-			"Un jugador actúa y su equipo adivina. Desliza a la derecha si lo aciertan y a la izquierda para pasar.",
+			"Primero describe la carta, luego di solo una palabra y al final hazla con mímica. Tu equipo adivina antes de que se acabe el tiempo.",
 		newGame: "Nueva partida",
 	},
 	setup: {
 		title: "¿Quién juega?",
-		language: "Idioma",
 		deck: "Baraja",
 		decksMixed: (count) => `${count} barajas mezcladas`,
 		cardsInPlay: (inPlay, total) => `${inPlay} de ${total} cartas`,
@@ -506,4 +513,9 @@ export const TRANSLATIONS: Record<GameLanguage, Translations> = { en, es };
 export const LANGUAGE_NAMES: Record<GameLanguage, string> = {
 	es: "Español",
 	en: "English",
+};
+
+export const LANGUAGE_FLAGS: Record<GameLanguage, string> = {
+	es: "🇪🇸",
+	en: "🇬🇧",
 };

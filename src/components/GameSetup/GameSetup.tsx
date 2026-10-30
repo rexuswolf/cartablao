@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { GAME_LANGUAGES, type GameLanguage } from "../../data/language";
+import type { GameLanguage } from "../../data/language";
 import {
 	getDefaultTeams,
 	loadSavedTeams,
@@ -11,10 +11,10 @@ import type { GameDeckManagerState } from "../../services/GameDeckManager";
 import { getReadableTextColor } from "../../shared/libs/color";
 import { useGameConfig } from "../../shared/hooks/useGameConfig";
 import { useTeamManager } from "../../shared/hooks/useTeamManager";
-import { LANGUAGE_NAMES } from "../../shared/i18n/translations";
 import { useI18n } from "../../shared/i18n/useI18n";
 import ui from "../../shared/styles/ui.module.css";
 import { Icon } from "../Icon/Icon";
+import { LanguageButton } from "../LanguageButton/LanguageButton";
 import { Stepper } from "../Stepper/Stepper";
 import { PlayerSheet } from "./components/PlayerSheet";
 import { TeamSheet } from "./components/TeamSheet";
@@ -113,31 +113,10 @@ export function GameSetup({
 
 	return (
 		<div className={ui.screen}>
-			<h1 className={ui.title}>{t.setup.title}</h1>
-
-			<section className={ui.section} aria-labelledby="language-heading">
-				<h2 id="language-heading" className={ui.sectionTitle}>
-					{t.setup.language}
-				</h2>
-				<div
-					className={styles.languageSwitch}
-					role="group"
-					aria-labelledby="language-heading"
-				>
-					{GAME_LANGUAGES.map((option) => (
-						<button
-							key={option}
-							type="button"
-							lang={option}
-							className={styles.languageOption}
-							aria-pressed={language === option}
-							onClick={() => handleLanguageChange(option)}
-						>
-							{LANGUAGE_NAMES[option]}
-						</button>
-					))}
-				</div>
-			</section>
+			<div className={styles.titleRow}>
+				<h1 className={ui.title}>{t.setup.title}</h1>
+				<LanguageButton onChange={handleLanguageChange} />
+			</div>
 
 			<section className={ui.section} aria-labelledby="deck-heading">
 				<h2 id="deck-heading" className={ui.sectionTitle}>
