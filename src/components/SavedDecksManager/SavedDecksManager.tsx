@@ -1,11 +1,13 @@
 import { useState } from "react";
-import type { Deck } from "../../data/Decks/Deck";
+import { localize } from "../../data/language";
 import {
 	deleteDeck,
 	getDeckCards,
 	getSavedDecks,
 	renameDeck,
+	type SavedDeck,
 } from "../../data/savedDecks";
+import { useI18n } from "../../shared/i18n/useI18n";
 import ui from "../../shared/styles/ui.module.css";
 import { Icon } from "../Icon/Icon";
 import { ImportExportDialog } from "../ImportExportDialog/ImportExportDialog";
@@ -21,7 +23,10 @@ export function SavedDecksManager({
 	onDeckSelected,
 	onClose,
 }: SavedDecksManagerProps) {
-	const [savedDecks, setSavedDecks] = useState<Deck[]>(() => getSavedDecks());
+	const { language, t } = useI18n();
+	const [savedDecks, setSavedDecks] = useState<SavedDeck[]>(() =>
+		getSavedDecks(),
+	);
 	const [editingDeckId, setEditingDeckId] = useState<string | null>(null);
 	const [editName, setEditName] = useState("");
 	const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
@@ -43,7 +48,7 @@ export function SavedDecksManager({
 		setConfirmingDeleteId(null);
 	};
 
-	const handleStartRename = (deck: Deck) => {
+	const handleStartRename = (deck: SavedDeck) => {
 		setEditingDeckId(deck.id);
 		setEditName(deck.name);
 	};
@@ -68,7 +73,7 @@ export function SavedDecksManager({
 	return (
 		<>
 			<Sheet
-				title="My decks"
+				title={t.savedDecks.title}
 				onClose={onClose}
 				tall
 				headerAction={
@@ -77,21 +82,21 @@ export function SavedDecksManager({
 						className={ui.pill}
 						onClick={() => setShowImportExport(true)}
 					>
-						Import or export
+						{t.savedDecks.importOrExport}
 					</button>
 				}
 			>
 				{savedDecks.length === 0 ? (
 					<div className={ui.emptyState}>
-						<h3 className={ui.sectionTitle}>No saved decks yet</h3>
-						<p>Decks you make or import show up here.</p>
+						<h3 className={ui.sectionTitle}>{t.savedDecks.empty}</h3>
+						<p>{t.savedDecks.emptyHint}</p>
 						<button
 							type="button"
 							className={ui.accent}
 							onClick={() => setShowImportExport(true)}
 						>
 							<Icon name="upload" size={18} />
-							Import decks
+							{t.savedDecks.importDecks}
 						</button>
 					</div>
 				) : (
@@ -110,7 +115,7 @@ export function SavedDecksManager({
 											className={ui.input}
 											value={editName}
 											onChange={(e) => setEditName(e.target.value)}
-											aria-label="Deck name"
+											aria-label={t.savedDecks.deckName}
 										/>
 										<div className={styles.rowActions}>
 											<button
@@ -118,14 +123,14 @@ export function SavedDecksManager({
 												className={ui.secondary}
 												onClick={handleCancelRename}
 											>
-												Cancel
+												{t.common.cancel}
 											</button>
 											<button
 												type="submit"
 												className={ui.accent}
 												disabled={!editName.trim()}
 											>
-												Save name
+												{t.savedDecks.saveName}
 											</button>
 										</div>
 									</form>
@@ -135,13 +140,14 @@ export function SavedDecksManager({
 											<div className={styles.deckInfo}>
 												<h3 className={styles.deckName}>{deck.name}</h3>
 												<p className={styles.deckMeta}>
-													{deck.language.display}, {deck.cards.length} cards
+													{t.deckLanguages[deck.language.code]},{" "}
+													{t.common.cards(deck.cards.length)}
 												</p>
 											</div>
 											<button
 												type="button"
 												className={ui.iconButton}
-												aria-label={`Rename ${deck.name}`}
+												aria-label={t.savedDecks.renameLabel(deck.name)}
 												onClick={() => handleStartRename(deck)}
 											>
 												<Icon name="edit" size={18} />
@@ -149,16 +155,19 @@ export function SavedDecksManager({
 											<button
 												type="button"
 												className={ui.iconButton}
-												aria-label={`Delete ${deck.name}`}
+												aria-label={t.savedDecks.deleteLabel(deck.name)}
 												onClick={() => setConfirmingDeleteId(deck.id)}
 											>
 												<Icon name="trash" size={18} />
 											</button>
 										</div>
 										<p className={styles.preview}>
-											{deck.cards.slice(0, 4).join(", ")}
+											{deck.cards
+												.slice(0, 4)
+												.map((card) => localize(card.text, language))
+												.join(", ")}
 											{deck.cards.length > 4 &&
-												` and ${deck.cards.length - 4} more`}
+												t.common.andMore(deck.cards.length - 4)}
 										</p>
 										{confirmingDeleteId === deck.id ? (
 											<div className={styles.rowActions}>
@@ -167,14 +176,14 @@ export function SavedDecksManager({
 													className={ui.secondary}
 													onClick={() => setConfirmingDeleteId(null)}
 												>
-													Keep it
+													{t.savedDecks.keepIt}
 												</button>
 												<button
 													type="button"
 													className={ui.danger}
 													onClick={() => handleDeleteDeck(deck.id)}
 												>
-													Delete deck
+													{t.savedDecks.deleteDeck}
 												</button>
 											</div>
 										) : (
@@ -183,7 +192,7 @@ export function SavedDecksManager({
 												className={`${ui.accent} ${ui.block}`}
 												onClick={() => handleUseDeck(deck.id)}
 											>
-												Play this deck
+												{t.savedDecks.playDeck}
 											</button>
 										)}
 									</>

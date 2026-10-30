@@ -1,4 +1,3 @@
-import type { DeckCard } from "../components/Card/DeckCard";
 import { Language } from "../data/language";
 import { ResponseMapper } from "./ResponseMapper";
 
@@ -13,7 +12,18 @@ export interface GeminiResponse {
     }>;
 }
 
-export async function generateDeckWithGemini(topic: string, userApiKey?: string, cardCount: number = 30, language: Language = Language.universal()): Promise<DeckCard[]> {
+// Carries the HTTP status so the interface can tell a rejected key from other failures
+export class GeminiError extends Error {
+    status?: number;
+
+    constructor(message: string, status?: number) {
+        super(message);
+        this.name = 'GeminiError';
+        this.status = status;
+    }
+}
+
+export async function generateDeckWithGemini(topic: string, userApiKey?: string, cardCount: number = 30, language: Language = Language.universal()): Promise<string[]> {
     const apiKey = userApiKey || import.meta.env.VITE_GEMINI_API_KEY;
 
     if (!apiKey) {
@@ -64,7 +74,7 @@ export async function generateDeckWithGemini(topic: string, userApiKey?: string,
         });
 
         if (!response.ok) {
-            throw new Error(`Gemini API error: ${response.status} ${response.statusText}`);
+            throw new GeminiError(`Gemini API error: ${response.status} ${response.statusText}`, response.status);
         }
 
         const data: GeminiResponse = await response.json();
@@ -72,6 +82,7 @@ export async function generateDeckWithGemini(topic: string, userApiKey?: string,
 
     } catch (error) {
         console.error('Gemini API error:', error);
-        throw new Error(`Failed to generate deck: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        if (error instanceof GeminiError) throw error;
+        throw new GeminiError(`Failed to generate deck: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 } 

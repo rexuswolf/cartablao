@@ -1,5 +1,6 @@
 import type { Player, Team } from "../../../Game";
 import ui from "../../../shared/styles/ui.module.css";
+import { useI18n } from "../../../shared/i18n/useI18n";
 import { Icon } from "../../Icon/Icon";
 import { Sheet } from "../../Sheet/Sheet";
 import styles from "../GameSetup.module.css";
@@ -19,11 +20,12 @@ export function PlayerSheet({
 	onRemove,
 	onClose,
 }: PlayerSheetProps) {
+	const { t } = useI18n();
 	return (
 		<Sheet title={player.name} onClose={onClose}>
 			<div className={ui.section}>
 				<h3 className={ui.sectionTitle} id="player-team-heading">
-					Team
+					{t.playerSheet.team}
 				</h3>
 				<ul className={styles.teamChoices} aria-labelledby="player-team-heading">
 					{teams.map((team) => {
@@ -46,8 +48,7 @@ export function PlayerSheet({
 									/>
 									<span className={styles.teamChoiceName}>{team.name}</span>
 									<span className={styles.teamChoiceCount}>
-										{team.players.length}{" "}
-										{team.players.length === 1 ? "player" : "players"}
+										{t.playerSheet.players(team.players.length)}
 									</span>
 									{isCurrent && <Icon name="check" size={20} />}
 								</button>
@@ -65,7 +66,7 @@ export function PlayerSheet({
 				}}
 			>
 				<Icon name="trash" size={18} />
-				Remove {player.name}
+				{t.playerSheet.remove(player.name)}
 			</button>
 		</Sheet>
 	);

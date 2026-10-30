@@ -1,69 +1,67 @@
-import { ACT_IT_OUT_DECK } from "./Decks/english/ActItOutDeck";
-import { ANIMALS_DECK } from "./Decks/english/AnimalsDeck";
-import { BLOCKBUSTER_MOVIES_ENGLISH } from "./Decks/english/BlockbusterMoviesEnglishDeck";
-import { FAMOUS_TV_SERIES_ENGLISH_DECK } from "./Decks/english/FamousTvSeriesEnglishDeck";
-import { SPORTS_DECK } from "./Decks/english/SportsDeck";
-import { ACTUALO_DECK } from "./Decks/spanish/ActualoDeck";
-import { BLOCKBUSTER_MOVIES_SPANISH } from "./Decks/spanish/BlockbusterMoviesSpanishDeck";
-import { MARVEL_CHARACTERS_SPANISH_DECK } from "./Decks/spanish/MarvelCharactersSpanishDeck";
-import { SERIES_FAMOSAS_SPANISH_DECK } from "./Decks/spanish/SeriesDeTvFamosasDeck";
-import { ACCENTS_IMPRESSIONS_DECK } from "./Decks/universal/AccentsImpressionsDeck";
-import { FAMOUS_LOGOS_BRANDS_DECK } from "./Decks/universal/FamousLogosDeck";
-import { FAMOUS_PEOPLE_DECK } from "./Decks/universal/FamousPeopleDeck";
-import { FAMOUS_VIDEOGAME_CHARACTERS_DECK } from "./Decks/universal/FamousVideogameCharactersDeck";
-import { FAMOUS_VIDEOGAMES_DECK } from "./Decks/universal/FamousVideogamesDeck";
-import { FAMOUS_YOUTUBERS_DECK } from "./Decks/universal/FamousYoutubersDeck";
-import { POPULAR_SONGS_DECK } from "./Decks/universal/PopularSongsDeck";
-import { PERSONAJES_DE_CINE_DECK } from "./Decks/spanish/PersonajesDeCineDeck";
-import { PERSONAJES_DE_SERIES_DECK } from "./Decks/spanish/PersonajesDeSeriesDeck";
-import { CINE_Y_SERIES_DE_ESPANA_DECK } from "./Decks/spanish/CineYSeriesDeEspanaDeck";
-import { CINE_DE_TERROR_DECK } from "./Decks/spanish/CineDeTerrorDeck";
-import { DISNEY_Y_PIXAR_DECK } from "./Decks/spanish/DisneyYPixarDeck";
-import { SAGAS_EPICAS_DECK } from "./Decks/spanish/SagasEpicasDeck";
-import { ANIME_DECK } from "./Decks/spanish/AnimeDeck";
-import { COMIDA_Y_BEBIDA_DECK } from "./Decks/spanish/ComidaYBebidaDeck";
-import { PROFESIONES_DECK } from "./Decks/spanish/ProfesionesDeck";
-import { MONUMENTOS_Y_LUGARES_DECK } from "./Decks/spanish/MonumentosYLugaresDeck";
-import { INTERNET_Y_REDES_DECK } from "./Decks/spanish/InternetYRedesDeck";
-import { EXITOS_PARA_CANTAR_DECK } from "./Decks/spanish/ExitosParaCantarDeck";
-import { TAYLOR_SWIFT_DECK } from "./Decks/universal/TaylorSwiftDeck";
+import { ACCENTS_IMPRESSIONS_DECK } from "./Decks/AccentsImpressionsDeck";
+import { ACT_IT_OUT_DECK } from "./Decks/ActItOutDeck";
+import { ANIMALS_DECK } from "./Decks/AnimalsDeck";
+import { ANIME_DECK } from "./Decks/AnimeDeck";
+import { BLOCKBUSTER_MOVIES_DECK } from "./Decks/BlockbusterMoviesDeck";
+import { CINE_DE_TERROR_DECK } from "./Decks/CineDeTerrorDeck";
+import { CINE_Y_SERIES_DE_ESPANA_DECK } from "./Decks/CineYSeriesDeEspanaDeck";
+import { COMIDA_Y_BEBIDA_DECK } from "./Decks/ComidaYBebidaDeck";
+import { DISNEY_Y_PIXAR_DECK } from "./Decks/DisneyYPixarDeck";
+import { EXITOS_PARA_CANTAR_DECK } from "./Decks/ExitosParaCantarDeck";
+import { FAMOUS_LOGOS_BRANDS_DECK } from "./Decks/FamousLogosDeck";
+import { FAMOUS_PEOPLE_DECK } from "./Decks/FamousPeopleDeck";
+import { FAMOUS_TV_SERIES_DECK } from "./Decks/FamousTvSeriesDeck";
+import { FAMOUS_VIDEOGAME_CHARACTERS_DECK } from "./Decks/FamousVideogameCharactersDeck";
+import { FAMOUS_VIDEOGAMES_DECK } from "./Decks/FamousVideogamesDeck";
+import { FAMOUS_YOUTUBERS_DECK } from "./Decks/FamousYoutubersDeck";
+import { INTERNET_Y_REDES_DECK } from "./Decks/InternetYRedesDeck";
+import { MARVEL_CHARACTERS_DECK } from "./Decks/MarvelCharactersDeck";
+import { MONUMENTOS_Y_LUGARES_DECK } from "./Decks/MonumentosYLugaresDeck";
+import { PERSONAJES_DE_CINE_DECK } from "./Decks/PersonajesDeCineDeck";
+import { PERSONAJES_DE_SERIES_DECK } from "./Decks/PersonajesDeSeriesDeck";
+import { POPULAR_SONGS_DECK } from "./Decks/PopularSongsDeck";
+import { PROFESIONES_DECK } from "./Decks/ProfesionesDeck";
+import { SAGAS_EPICAS_DECK } from "./Decks/SagasEpicasDeck";
+import { SPORTS_DECK } from "./Decks/SportsDeck";
+import { TAYLOR_SWIFT_DECK } from "./Decks/TaylorSwiftDeck";
 
-// Deck Library - Multiple themed decks
+// Deck Library - one deck per topic, each playable in every game language
 export const DECK_LIBRARY = {
-    // Universal
+    // People & pop culture
     "famous-people": FAMOUS_PEOPLE_DECK,
-    "famous-videogames": FAMOUS_VIDEOGAMES_DECK,
     "famous-youtubers": FAMOUS_YOUTUBERS_DECK,
-    "famous-videogame-characters": FAMOUS_VIDEOGAME_CHARACTERS_DECK,
-    "popular-songs": POPULAR_SONGS_DECK,
     "famous-logos-brands": FAMOUS_LOGOS_BRANDS_DECK,
-    "accents-impressions": ACCENTS_IMPRESSIONS_DECK,
+    "internet-y-redes": INTERNET_Y_REDES_DECK,
 
-    // English
-    "act-it-out": ACT_IT_OUT_DECK,
-    animals: ANIMALS_DECK,
-    sports: SPORTS_DECK,
-    "blockbuster-movies-english": BLOCKBUSTER_MOVIES_ENGLISH,
-    "famous-tv-series-english": FAMOUS_TV_SERIES_ENGLISH_DECK,
-
-    // Spanish
-    "actualo": ACTUALO_DECK,
-    "series-famosas-spanish": SERIES_FAMOSAS_SPANISH_DECK,
-    "marvel-characters-spanish": MARVEL_CHARACTERS_SPANISH_DECK,
-    "blockbuster-movies-spanish": BLOCKBUSTER_MOVIES_SPANISH,
+    // Movies & TV
+    "blockbuster-movies": BLOCKBUSTER_MOVIES_DECK,
+    "famous-tv-series": FAMOUS_TV_SERIES_DECK,
     "personajes-de-cine": PERSONAJES_DE_CINE_DECK,
     "personajes-de-series": PERSONAJES_DE_SERIES_DECK,
-    "cine-y-series-de-espana": CINE_Y_SERIES_DE_ESPANA_DECK,
-    "cine-de-terror": CINE_DE_TERROR_DECK,
+    "marvel-characters": MARVEL_CHARACTERS_DECK,
     "disney-y-pixar": DISNEY_Y_PIXAR_DECK,
     "sagas-epicas": SAGAS_EPICAS_DECK,
+    "cine-de-terror": CINE_DE_TERROR_DECK,
+    "cine-y-series-de-espana": CINE_Y_SERIES_DE_ESPANA_DECK,
     "anime": ANIME_DECK,
+
+    // Games
+    "famous-videogames": FAMOUS_VIDEOGAMES_DECK,
+    "famous-videogame-characters": FAMOUS_VIDEOGAME_CHARACTERS_DECK,
+
+    // Music
+    "popular-songs": POPULAR_SONGS_DECK,
+    "exitos-para-cantar": EXITOS_PARA_CANTAR_DECK,
+    "taylor-swift": TAYLOR_SWIFT_DECK,
+
+    // Everyday life
+    "act-it-out": ACT_IT_OUT_DECK,
+    "accents-impressions": ACCENTS_IMPRESSIONS_DECK,
+    animals: ANIMALS_DECK,
+    sports: SPORTS_DECK,
     "comida-y-bebida": COMIDA_Y_BEBIDA_DECK,
     "profesiones": PROFESIONES_DECK,
     "monumentos-y-lugares": MONUMENTOS_Y_LUGARES_DECK,
-    "internet-y-redes": INTERNET_Y_REDES_DECK,
-    "exitos-para-cantar": EXITOS_PARA_CANTAR_DECK,
-    "taylor-swift": TAYLOR_SWIFT_DECK,
 };
 
 // Helper function to get all available decks
@@ -74,4 +72,4 @@ export function getAllDecks() {
 // Helper function to get a specific deck by ID
 export function getDeckById(deckId: string) {
     return DECK_LIBRARY[deckId as keyof typeof DECK_LIBRARY];
-} 
+}

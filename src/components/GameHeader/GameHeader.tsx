@@ -1,3 +1,4 @@
+import { useI18n } from "../../shared/i18n/useI18n";
 import styles from "./GameHeader.module.css";
 
 interface GameHeaderProps {
@@ -17,20 +18,21 @@ export function GameHeader({
 	timeLeft,
 	maxTime,
 }: GameHeaderProps) {
+	const { t } = useI18n();
 	const remaining = maxTime > 0 ? (timeLeft / maxTime) * 100 : 0;
 	const isUrgent = timeLeft <= 10;
 
 	return (
 		<header className={styles.gameHeader}>
 			<div className={styles.turnInfo}>
-				<span className={styles.playerName}>{playerName}'s turn</span>
+				<span className={styles.playerName}>{t.game.turnOf(playerName)}</span>
 				<span className={styles.turnMeta}>
-					{teamName}, round {roundNumber} of {totalRounds}
+					{teamName}, {t.common.roundOf(roundNumber, totalRounds)}
 				</span>
 			</div>
 			<div
 				role="timer"
-				aria-label={`${timeLeft} seconds left`}
+				aria-label={t.game.secondsLeft(timeLeft)}
 				className={`${styles.timer} ${isUrgent ? styles.urgent : ""}`}
 			>
 				<span

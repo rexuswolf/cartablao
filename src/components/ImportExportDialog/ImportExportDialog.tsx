@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { useExport } from "../../shared/hooks/useExport";
 import { useImport } from "../../shared/hooks/useImport";
+import { useI18n } from "../../shared/i18n/useI18n";
 import ui from "../../shared/styles/ui.module.css";
 import { Icon } from "../Icon/Icon";
 import { Sheet } from "../Sheet/Sheet";
@@ -15,6 +16,7 @@ export function ImportExportDialog({
 	onClose,
 	onImportSuccess,
 }: ImportExportDialogProps) {
+	const { t } = useI18n();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [fileError, setFileError] = useState("");
 	const {
@@ -42,7 +44,7 @@ export function ImportExportDialog({
 
 		const validation = validateFile(file);
 		if (!validation.isValid) {
-			setFileError(validation.error ?? "This file can't be imported.");
+			setFileError(validation.error ?? t.importExport.cantImport);
 			return;
 		}
 		setFileError("");
@@ -66,13 +68,10 @@ export function ImportExportDialog({
 	};
 
 	return (
-		<Sheet title="Import or export" onClose={handleClose}>
+		<Sheet title={t.importExport.title} onClose={handleClose}>
 			<section className={ui.section}>
-				<h3 className={ui.sectionTitle}>Export</h3>
-				<p className={styles.description}>
-					Save all your decks to a file to back them up or share them with
-					friends.
-				</p>
+				<h3 className={ui.sectionTitle}>{t.importExport.export}</h3>
+				<p className={styles.description}>{t.importExport.exportDescription}</p>
 				<button
 					type="button"
 					className={ui.secondary}
@@ -80,7 +79,7 @@ export function ImportExportDialog({
 					disabled={isExporting}
 				>
 					<Icon name="download" size={18} />
-					{isExporting ? "Exporting..." : "Export all decks"}
+					{isExporting ? t.importExport.exporting : t.importExport.exportAll}
 				</button>
 				{hasExportMessage && (
 					<p className={exportSuccess ? ui.success : ui.error}>{exportMessage}</p>
@@ -88,14 +87,11 @@ export function ImportExportDialog({
 			</section>
 
 			<section className={ui.section}>
-				<h3 className={ui.sectionTitle}>Import</h3>
-				<p className={styles.description}>
-					Add decks from an exported .json file (up to 10 MB). Decks with a
-					name you already use get a number added.
-				</p>
+				<h3 className={ui.sectionTitle}>{t.importExport.import}</h3>
+				<p className={styles.description}>{t.importExport.importDescription}</p>
 				<label className={`${ui.accent} ${styles.fileButton}`}>
 					<Icon name="upload" size={18} />
-					{isImporting ? "Importing..." : "Choose a file"}
+					{isImporting ? t.importExport.importing : t.importExport.chooseFile}
 					<input
 						ref={fileInputRef}
 						type="file"

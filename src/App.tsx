@@ -8,16 +8,19 @@ import { GameSetup } from "./components/GameSetup/GameSetup";
 import { MainLayout } from "./components/MainLayout/MainLayout";
 import { SavedDecksManager } from "./components/SavedDecksManager/SavedDecksManager";
 import { StartScreen } from "./components/StartScreen/StartScreen";
+import type { GameLanguage } from "./data/language";
 import { migrateSavedDecks } from "./data/savedDecks";
 import type { GameConfig, GameState, Team } from "./Game";
 import type { Round } from "./Round";
 import type { GameDeckManagerState } from "./services/GameDeckManager";
 import { GameDeckManager } from "./services/GameDeckManager";
 import { useBackHandler } from "./shared/hooks/useBackHandler";
+import { useI18n } from "./shared/i18n/useI18n";
 
 function App() {
+	const { language, setLanguage } = useI18n();
 	// Initialize deck manager
-	const [deckManager] = useState(() => new GameDeckManager());
+	const [deckManager] = useState(() => new GameDeckManager(language));
 	const [deckState, setDeckState] = useState<GameDeckManagerState>(() =>
 		deckManager.getState(),
 	);
@@ -109,6 +112,16 @@ function App() {
 		setShowDeckSelector(false);
 	}, []);
 
+	// Deck names and cards follow the game's language
+	const handleLanguageChange = useCallback(
+		(newLanguage: GameLanguage) => {
+			setLanguage(newLanguage);
+			deckManager.setLanguage(newLanguage);
+			setDeckState(deckManager.getState());
+		},
+		[deckManager, setLanguage],
+	);
+
 	const handleDeckStateChange = useCallback(
 		(newDeckState: GameDeckManagerState) => {
 			setDeckState(newDeckState);
@@ -135,6 +148,7 @@ function App() {
 					deckState={deckState}
 					initialConfig={gameConfig ?? undefined}
 					onStartGame={handleSetupComplete}
+					onLanguageChange={handleLanguageChange}
 					onCreateCustomDeck={() => setShowDeckCreator(true)}
 					onShowSavedDecks={() => setShowSavedDecks(true)}
 					onShowDeckSelector={() => setShowDeckSelector(true)}

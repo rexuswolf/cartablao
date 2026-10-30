@@ -1,5 +1,6 @@
 import type { Team } from "../../Game";
 import type { Round } from "../../Round";
+import { useI18n } from "../../shared/i18n/useI18n";
 import { Scoreboard } from "../Scoreboard/Scoreboard";
 
 interface EndScreenProps {
@@ -9,6 +10,7 @@ interface EndScreenProps {
 }
 
 export function EndScreen({ rounds, teams, onPlayAgain }: EndScreenProps) {
+	const { t } = useI18n();
 	// A game ended early leaves later rounds unplayed
 	const playedRounds = rounds.filter((round) => round.getTurns().length > 0)
 		.length;
@@ -17,9 +19,9 @@ export function EndScreen({ rounds, teams, onPlayAgain }: EndScreenProps) {
 		<Scoreboard
 			rounds={rounds}
 			teams={teams}
-			badge={`Game over after ${playedRounds} ${playedRounds === 1 ? "round" : "rounds"}`}
+			badge={t.scoreboard.gameOver(playedRounds)}
 			isFinal
-			actionLabel="Play again"
+			actionLabel={t.scoreboard.playAgain}
 			onAction={onPlayAgain}
 		/>
 	);

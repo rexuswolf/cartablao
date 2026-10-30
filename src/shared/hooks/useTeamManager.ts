@@ -1,4 +1,6 @@
 import { useCallback, useState } from 'react';
+import { defaultTeamName } from '../../data/teams';
+import type { GameLanguage } from '../../data/language';
 import type { Player, Team } from '../../Game';
 
 export const TEAM_COLORS = [
@@ -6,15 +8,8 @@ export const TEAM_COLORS = [
     '#00a6a6', '#ff9f1c', '#5cc8ff', '#c2e812', '#ffd23f',
 ];
 
-// Display names for TEAM_COLORS, used to name new teams ("Purple Team")
-const TEAM_COLOR_NAMES: Record<string, string> = {
-    '#ff5b3a': 'Red', '#3355ff': 'Blue', '#2fb872': 'Green', '#9b5cff': 'Purple', '#ff7ab6': 'Pink',
-    '#00a6a6': 'Teal', '#ff9f1c': 'Orange', '#5cc8ff': 'Sky', '#c2e812': 'Lime', '#ffd23f': 'Yellow',
-};
-
-
-
-export function useTeamManager(initialTeams: Team[] = []) {
+// New teams are named after their color in the given language ("Purple Team")
+export function useTeamManager(initialTeams: Team[] = [], language: GameLanguage = 'en') {
     const [teams, setTeams] = useState<Team[]>(initialTeams);
 
     const addTeam = useCallback((name: string) => {
@@ -47,10 +42,9 @@ export function useTeamManager(initialTeams: Team[] = []) {
                     const color = TEAM_COLORS.find(c => !usedColors.has(c))
                         ?? TEAM_COLORS[index % TEAM_COLORS.length];
                     usedColors.add(color);
-                    const colorName = TEAM_COLOR_NAMES[color];
                     added.push({
                         id: `team-${Date.now()}-${index}`,
-                        name: colorName ? `${colorName} Team` : `Team ${index + 1}`,
+                        name: defaultTeamName(color, index + 1, language),
                         color,
                         players: [],
                     });
@@ -65,7 +59,7 @@ export function useTeamManager(initialTeams: Team[] = []) {
             }
             return kept;
         });
-    }, []);
+    }, [language]);
 
     const removeTeam = useCallback((teamId: string) => {
         setTeams(prev => prev.filter(team => team.id !== teamId));

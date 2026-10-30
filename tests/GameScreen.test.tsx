@@ -5,8 +5,8 @@ import { GameScreen } from '../src/components/GameScreen/GameScreen';
 import type { GameConfig, Team } from '../src/Game';
 
 const deck: GameCard[] = [
-    { id: 0, word: 'Alpha', deckId: 'test' },
-    { id: 1, word: 'Bravo', deckId: 'test' },
+    { id: 0, cardId: 'alpha', word: 'Alpha', deckId: 'test' },
+    { id: 1, cardId: 'bravo', word: 'Bravo', deckId: 'test' },
 ];
 
 const teams: Team[] = [
@@ -188,7 +188,7 @@ describe('GameScreen', () => {
     });
 
     it('lists reviewed cards in play order, even after fixing one', () => {
-        const fourCards: GameCard[] = ['Alpha', 'Bravo', 'Charlie', 'Delta'].map((word, id) => ({ id, word, deckId: 'test' }));
+        const fourCards: GameCard[] = ['Alpha', 'Bravo', 'Charlie', 'Delta'].map((word, id) => ({ id, cardId: word, word, deckId: 'test' }));
         render(<GameScreen deck={fourCards} teams={teams} config={{ ...config, maxCards: 4 }} onGameEnd={vi.fn()} />);
 
         // Play four cards: skip, got it, skip, then end the turn on the fourth

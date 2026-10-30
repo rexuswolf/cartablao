@@ -1,4 +1,5 @@
 import ui from "../../shared/styles/ui.module.css";
+import { useI18n } from "../../shared/i18n/useI18n";
 import { Icon } from "../Icon/Icon";
 import styles from "./Stepper.module.css";
 
@@ -21,6 +22,7 @@ export function Stepper({
 	unit = "",
 	onChange,
 }: StepperProps) {
+	const { t } = useI18n();
 	return (
 		<div className={styles.stepper}>
 			<span className={styles.label}>{label}</span>
@@ -28,7 +30,7 @@ export function Stepper({
 				<button
 					type="button"
 					className={ui.iconButton}
-					aria-label={`Decrease ${label.toLowerCase()}`}
+					aria-label={t.stepper.decrease(label)}
 					disabled={value <= min}
 					onClick={() => onChange(Math.max(min, value - step))}
 				>
@@ -41,7 +43,7 @@ export function Stepper({
 				<button
 					type="button"
 					className={ui.iconButton}
-					aria-label={`Increase ${label.toLowerCase()}`}
+					aria-label={t.stepper.increase(label)}
 					disabled={value >= max}
 					onClick={() => onChange(Math.min(max, value + step))}
 				>

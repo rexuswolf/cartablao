@@ -1,14 +1,13 @@
 /** biome-ignore-all lint/complexity/noStaticOnlyClass: Mappers are allowed to use only static methods */
-import type { DeckCard } from "../components/Card/DeckCard";
 import type { GeminiResponse } from "./ai";
 
 type AIGeneratedCard = string;
 
 export class ResponseMapper {
     /**
-     * Maps a Gemini API response to an array of DeckCard objects
+     * Maps a Gemini API response to the words for a deck's cards
      */
-    static mapGeminiResponseToCards(response: GeminiResponse): DeckCard[] {
+    static mapGeminiResponseToCards(response: GeminiResponse): string[] {
         const content = response.candidates[0]?.content?.parts[0]?.text;
         const finishReason = response.candidates[0]?.finishReason;
 

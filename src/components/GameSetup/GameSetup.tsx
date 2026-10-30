@@ -1,10 +1,18 @@
 import { useEffect, useState } from "react";
-import { DEFAULT_TEAMS, loadSavedTeams, saveTeams } from "../../data/teams";
+import { GAME_LANGUAGES, type GameLanguage } from "../../data/language";
+import {
+	getDefaultTeams,
+	loadSavedTeams,
+	localizeTeamNames,
+	saveTeams,
+} from "../../data/teams";
 import type { GameConfig, Team } from "../../Game";
 import type { GameDeckManagerState } from "../../services/GameDeckManager";
 import { getReadableTextColor } from "../../shared/libs/color";
 import { useGameConfig } from "../../shared/hooks/useGameConfig";
 import { useTeamManager } from "../../shared/hooks/useTeamManager";
+import { LANGUAGE_NAMES } from "../../shared/i18n/translations";
+import { useI18n } from "../../shared/i18n/useI18n";
 import ui from "../../shared/styles/ui.module.css";
 import { Icon } from "../Icon/Icon";
 import { Stepper } from "../Stepper/Stepper";
@@ -16,6 +24,7 @@ interface GameSetupProps {
 	deckState: GameDeckManagerState;
 	initialConfig?: GameConfig;
 	onStartGame: (config: GameConfig, teams: Team[]) => void;
+	onLanguageChange: (language: GameLanguage) => void;
 	onShowDeckSelector: () => void;
 	onCreateCustomDeck: () => void;
 	onShowSavedDecks: () => void;
@@ -27,10 +36,12 @@ export function GameSetup({
 	deckState,
 	initialConfig,
 	onStartGame,
+	onLanguageChange,
 	onShowDeckSelector,
 	onCreateCustomDeck,
 	onShowSavedDecks,
 }: GameSetupProps) {
+	const { language, t } = useI18n();
 	const {
 		config,
 		selectedPreset,
@@ -40,9 +51,12 @@ export function GameSetup({
 		isValid,
 	} = useGameConfig(initialConfig);
 	// Start from the players last used in this browser
-	const [savedTeams] = useState(() => loadSavedTeams() ?? DEFAULT_TEAMS);
+	const [savedTeams] = useState(() =>
+		localizeTeamNames(loadSavedTeams() ?? getDefaultTeams(language), language),
+	);
 	const {
 		teams,
+		setTeams,
 		setTeamCount,
 		updateTeam,
 		addPlayer,
@@ -50,7 +64,7 @@ export function GameSetup({
 		movePlayer,
 		balanceTeams,
 		totalPlayers,
-	} = useTeamManager(savedTeams);
+	} = useTeamManager(savedTeams, language);
 	const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
 	const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
 	const [newPlayerName, setNewPlayerName] = useState("");
@@ -72,7 +86,7 @@ export function GameSetup({
 	const deckName =
 		deckState.selectedDecks.length === 1
 			? deckState.selectedDecks[0].name
-			: `${deckState.selectedDecks.length} decks mixed`;
+			: t.setup.decksMixed(deckState.selectedDecks.length);
 	const canStart = isValid && teamsWithPlayers.length > 0 && totalCards > 0;
 
 	// New players join the smallest team; shuffle or move them afterwards
@@ -87,17 +101,47 @@ export function GameSetup({
 		setNewPlayerName("");
 	};
 
+	const handleLanguageChange = (newLanguage: GameLanguage) => {
+		if (newLanguage === language) return;
+		onLanguageChange(newLanguage);
+		setTeams(localizeTeamNames(teams, newLanguage));
+	};
+
 	const handleStart = () => {
 		if (canStart) onStartGame(config, teamsWithPlayers);
 	};
 
 	return (
 		<div className={ui.screen}>
-			<h1 className={ui.title}>Who's playing?</h1>
+			<h1 className={ui.title}>{t.setup.title}</h1>
+
+			<section className={ui.section} aria-labelledby="language-heading">
+				<h2 id="language-heading" className={ui.sectionTitle}>
+					{t.setup.language}
+				</h2>
+				<div
+					className={styles.languageSwitch}
+					role="group"
+					aria-labelledby="language-heading"
+				>
+					{GAME_LANGUAGES.map((option) => (
+						<button
+							key={option}
+							type="button"
+							lang={option}
+							className={styles.languageOption}
+							aria-pressed={language === option}
+							onClick={() => handleLanguageChange(option)}
+						>
+							{LANGUAGE_NAMES[option]}
+						</button>
+					))}
+				</div>
+			</section>
 
 			<section className={ui.section} aria-labelledby="deck-heading">
 				<h2 id="deck-heading" className={ui.sectionTitle}>
-					Deck
+					{t.setup.deck}
 				</h2>
 				<div className={`${ui.sticker} ${styles.deckSticker}`}>
 					<div className={styles.deckThumb} aria-hidden="true">
@@ -107,7 +151,7 @@ export function GameSetup({
 					<div className={styles.deckInfo}>
 						<span className={styles.deckName}>{deckName}</span>
 						<span className={styles.deckMeta}>
-							{cardsInPlay} of {totalCards} cards
+							{t.setup.cardsInPlay(cardsInPlay, totalCards)}
 						</span>
 					</div>
 					<button
@@ -115,16 +159,16 @@ export function GameSetup({
 						className={ui.accent}
 						onClick={onShowDeckSelector}
 					>
-						Change
+						{t.setup.change}
 					</button>
 				</div>
 				<div className={styles.deckActions}>
 					<button type="button" className={ui.pill} onClick={onCreateCustomDeck}>
 						<Icon name="sparkle" size={18} />
-						Make a deck
+						{t.setup.makeDeck}
 					</button>
 					<button type="button" className={ui.pill} onClick={onShowSavedDecks}>
-						My decks
+						{t.setup.myDecks}
 					</button>
 				</div>
 			</section>
@@ -132,15 +176,17 @@ export function GameSetup({
 			<section className={ui.section} aria-labelledby="players-heading">
 				<div className={styles.sectionHeader}>
 					<h2 id="players-heading" className={ui.sectionTitle}>
-						Players
+						{t.setup.players}
 					</h2>
-					<span className={styles.deckMeta}>{totalPlayers} added</span>
+					<span className={styles.deckMeta}>
+						{t.setup.playersAdded(totalPlayers)}
+					</span>
 				</div>
 				<form className={styles.addPlayerForm} onSubmit={handleAddPlayer}>
 					<input
 						className={ui.input}
-						placeholder="Add a player"
-						aria-label="Player name"
+						placeholder={t.setup.addPlayerPlaceholder}
+						aria-label={t.setup.playerName}
 						value={newPlayerName}
 						onChange={(event) => setNewPlayerName(event.target.value)}
 						enterKeyHint="enter"
@@ -151,7 +197,7 @@ export function GameSetup({
 						className={ui.accent}
 						disabled={!newPlayerName.trim()}
 					>
-						Add
+						{t.setup.add}
 					</button>
 				</form>
 				{allPlayers.length > 0 ? (
@@ -161,7 +207,7 @@ export function GameSetup({
 								<button
 									type="button"
 									className={styles.playerChip}
-									aria-label={`${player.name}, ${team.name}. Change team or remove`}
+									aria-label={t.setup.playerChipLabel(player.name, team.name)}
 									onClick={() => setEditingPlayerId(player.id)}
 								>
 									<span
@@ -175,14 +221,14 @@ export function GameSetup({
 						))}
 					</ul>
 				) : (
-					<p className={styles.deckMeta}>Add everyone who's playing.</p>
+					<p className={styles.deckMeta}>{t.setup.noPlayers}</p>
 				)}
 			</section>
 
 			<section className={ui.section} aria-labelledby="teams-heading">
 				<div className={styles.sectionHeader}>
 					<h2 id="teams-heading" className={ui.sectionTitle}>
-						Teams
+						{t.setup.teams}
 					</h2>
 					<button
 						type="button"
@@ -191,11 +237,11 @@ export function GameSetup({
 						disabled={totalPlayers < 2}
 					>
 						<Icon name="shuffle" size={18} />
-						Shuffle into teams
+						{t.setup.shuffleTeams}
 					</button>
 				</div>
 				<Stepper
-					label="Number of teams"
+					label={t.setup.numberOfTeams}
 					value={teams.length}
 					min={1}
 					max={10}
@@ -213,27 +259,27 @@ export function GameSetup({
 								rotate: TILTS[index % TILTS.length],
 							}}
 							onClick={() => setEditingTeamId(team.id)}
-							aria-label={`Rename ${team.name}`}
+							aria-label={t.setup.renameTeamLabel(team.name)}
 						>
 							<span className={styles.teamName}>{team.name}</span>
 							<span className={styles.teamPlayers}>
 								{team.players.length > 0
 									? team.players.map((player) => player.name).join(", ")
-									: "No players yet"}
+									: t.setup.noTeamPlayers}
 							</span>
 						</button>
 					))}
 				</div>
 				<p className={styles.deckMeta}>
-					Tap a player to move them to another team, or a team to rename it.
+					{t.setup.teamsHint}
 				</p>
 			</section>
 
 			<section className={ui.section} aria-labelledby="rules-heading">
 				<h2 id="rules-heading" className={ui.sectionTitle}>
-					Rules
+					{t.setup.rules}
 				</h2>
-				<div className={ui.chips} role="group" aria-label="Presets">
+				<div className={ui.chips} role="group" aria-label={t.setup.presets}>
 					{getPresetNames().map((name) => (
 						<button
 							key={name}
@@ -242,13 +288,13 @@ export function GameSetup({
 							aria-pressed={selectedPreset === name}
 							onClick={() => selectPreset(name)}
 						>
-							{name.charAt(0).toUpperCase() + name.slice(1)}
+							{t.setup.presetNames[name] ?? name}
 						</button>
 					))}
 				</div>
 				<div className={styles.settingsGrid}>
 					<Stepper
-						label="Seconds per turn"
+						label={t.setup.secondsPerTurn}
 						value={config.secondsPerRound}
 						min={15}
 						max={180}
@@ -256,14 +302,14 @@ export function GameSetup({
 						onChange={(value) => updateConfig("secondsPerRound", value)}
 					/>
 					<Stepper
-						label="Rounds"
+						label={t.setup.rounds}
 						value={config.numberOfRounds}
 						min={1}
 						max={10}
 						onChange={(value) => updateConfig("numberOfRounds", value)}
 					/>
 					<Stepper
-						label="Cards"
+						label={t.setup.cards}
 						value={config.maxCards}
 						min={5}
 						max={50}
@@ -273,10 +319,10 @@ export function GameSetup({
 				</div>
 				<label className={`${ui.sticker} ${styles.toggleRow}`}>
 					<span className={styles.toggleText}>
-						<span className={styles.toggleTitle}>Pause between players</span>
-						<span className={styles.deckMeta}>
-							Pass the phone, then tap to start the turn
+						<span className={styles.toggleTitle}>
+							{t.setup.pauseBetweenPlayers}
 						</span>
+						<span className={styles.deckMeta}>{t.setup.pauseHint}</span>
 					</span>
 					<input
 						type="checkbox"
@@ -292,7 +338,7 @@ export function GameSetup({
 
 			<div className={ui.bottomBar}>
 				{!canStart && (
-					<p className={styles.hint}>Add at least one player</p>
+					<p className={styles.hint}>{t.setup.needPlayer}</p>
 				)}
 				<button
 					type="button"
@@ -300,7 +346,7 @@ export function GameSetup({
 					onClick={handleStart}
 					disabled={!canStart}
 				>
-					Let's play
+					{t.setup.play}
 				</button>
 			</div>
 

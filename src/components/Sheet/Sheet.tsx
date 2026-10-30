@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useId } from "react";
 import { useBackHandler } from "../../shared/hooks/useBackHandler";
+import { useI18n } from "../../shared/i18n/useI18n";
 import ui from "../../shared/styles/ui.module.css";
 import { Icon } from "../Icon/Icon";
 
@@ -24,6 +25,7 @@ export function Sheet({
 	headerAction,
 	tall = false,
 }: SheetProps) {
+	const { t } = useI18n();
 	const titleId = useId();
 	// The phone's back gesture closes the sheet instead of leaving the app
 	useBackHandler(true, onClose);
@@ -71,7 +73,7 @@ export function Sheet({
 							type="button"
 							className={ui.iconButton}
 							onClick={onClose}
-							aria-label="Close"
+							aria-label={t.common.close}
 						>
 							<Icon name="close" size={20} />
 						</button>

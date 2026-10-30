@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import type { SwipeEventData } from "react-swipeable";
 import type { GameDeckManagerState } from "../../services/GameDeckManager";
+import { useI18n } from "../../shared/i18n/useI18n";
 import ui from "../../shared/styles/ui.module.css";
 import { CardComponent } from "../Card/CardComponent";
 import type { GameCard } from "../Card/GameCard";
@@ -22,6 +23,7 @@ export function DeckExplorer({
 	onDeckStateChange,
 	onClose,
 }: DeckExplorerProps) {
+	const { t } = useI18n();
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [isSwiping, setIsSwiping] = useState(false);
 	const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(
@@ -88,15 +90,15 @@ export function DeckExplorer({
 
 	if (cards.length === 0) {
 		return (
-			<Sheet title="Preview cards" onClose={onClose}>
+			<Sheet title={t.deckExplorer.title} onClose={onClose}>
 				<div className={ui.emptyState}>
-					<p>No cards to preview. Pick at least one deck first.</p>
+					<p>{t.deckExplorer.empty}</p>
 					<button
 						type="button"
 						className={ui.accent}
 						onClick={() => setShowDeckSelector(true)}
 					>
-						Choose decks
+						{t.deckExplorer.chooseDecks}
 					</button>
 				</div>
 			</Sheet>
@@ -105,7 +107,7 @@ export function DeckExplorer({
 
 	return (
 		<Sheet
-			title="Preview cards"
+			title={t.deckExplorer.title}
 			onClose={onClose}
 			tall
 			footer={
@@ -117,7 +119,7 @@ export function DeckExplorer({
 						disabled={totalCards <= 1}
 					>
 						<Icon name="chevronLeft" size={20} />
-						Back
+						{t.deckExplorer.back}
 					</button>
 					<button
 						type="button"
@@ -125,15 +127,14 @@ export function DeckExplorer({
 						onClick={handleNext}
 						disabled={totalCards <= 1}
 					>
-						Next
+						{t.deckExplorer.next}
 						<Icon name="chevronRight" size={20} />
 					</button>
 				</>
 			}
 		>
 			<p className={styles.counter}>
-				Card {currentIndex + 1} of {totalCards}. Swipe either way to flip
-				through; nothing is scored here.
+				{t.deckExplorer.counter(currentIndex + 1, totalCards)}
 			</p>
 			<div className={styles.cardContainer}>
 				{currentCard && (
@@ -154,7 +155,7 @@ export function DeckExplorer({
 				className={ui.pill}
 				onClick={() => setShowDeckSelector(true)}
 			>
-				Change decks
+				{t.deckExplorer.changeDecks}
 			</button>
 		</Sheet>
 	);

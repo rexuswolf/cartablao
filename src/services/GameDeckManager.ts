@@ -1,14 +1,15 @@
+import type { DeckCard } from "../components/Card/DeckCard";
 import type { GameCard } from "../components/Card/GameCard";
 import { DECK_LIBRARY, getAllDecks } from "../data/deck";
-import type { Language } from "../data/language";
+import { type GameLanguage, type Language, localize } from "../data/language";
 import { getDeckCards, getSavedDecks } from "../data/savedDecks";
 
 // Deck management types
 export interface GameDeckSelection {
     deckId: string
-    name: string
+    name: string // In the game's language, starting with the deck's emoji for built-in decks
     cardCount: number
-    language: Language
+    language?: Language // Only saved decks, which keep the language they were written in
     isSelected: boolean
 }
 
@@ -26,8 +27,10 @@ export class GameDeckManager {
     private state: GameDeckManagerState;
     private officialDecks: GameDeckSelection[] = [];
     private customDecks: GameDeckSelection[] = [];
+    private language: GameLanguage;
 
-    constructor() {
+    constructor(language: GameLanguage = "en") {
+        this.language = language;
         this.state = {
             selectedDecks: [],
             availableDecks: [],
@@ -49,9 +52,8 @@ export class GameDeckManager {
         // Separate official and custom decks
         this.officialDecks = libraryDecks.map(deck => ({
             deckId: deck.id,
-            name: deck.name,
+            name: `${deck.emoji} ${localize(deck.name, this.language)}`,
             cardCount: deck.cards.length,
-            language: deck.language,
             isSelected: selectedDeckIds.has(deck.id)
         }));
 
@@ -88,6 +90,17 @@ export class GameDeckManager {
 
     public getCustomDecks(): GameDeckSelection[] {
         return [...this.customDecks];
+    }
+
+    public getLanguage(): GameLanguage {
+        return this.language;
+    }
+
+    // Deck names and card texts follow the game's language; the selection stays
+    public setLanguage(language: GameLanguage): void {
+        if (language === this.language) return;
+        this.language = language;
+        this.refreshAvailableDecks();
     }
 
     public getState(): GameDeckManagerState {
@@ -178,37 +191,26 @@ export class GameDeckManager {
         }
 
         const allCards: GameCard[] = [];
-        // Cards are looked up by id during the game, so every card needs a unique one
-        let nextCardId = 0;
+        // A card shared by several decks plays once. Different cards with the same text
+        // (e.g. a word typed into a saved deck that a built-in deck also has) play once too.
+        const seenCardIds = new Set<string>();
+        const seenWords = new Set<string>();
 
         for (const selectedDeck of this.state.selectedDecks) {
-            let deckCards: GameCard[] = [];
+            for (const card of this.getDeckCards(selectedDeck.deckId)) {
+                const word = localize(card.text, this.language);
+                const normalizedWord = word.trim().toLowerCase();
+                if (seenCardIds.has(card.id) || seenWords.has(normalizedWord)) continue;
 
-            // Check if it's a library deck
-            const libraryDeck = DECK_LIBRARY[selectedDeck.deckId as keyof typeof DECK_LIBRARY];
-            if (libraryDeck) {
-                deckCards = libraryDeck.cards.map((card) => ({
-                    id: nextCardId++,
-                    word: card,
-                    deckId: libraryDeck.id,
-                }));
-            } else {
-                // Check if it's a saved deck
-                const savedDeckCards = getDeckCards(selectedDeck.deckId);
-                if (savedDeckCards) {
-                    deckCards = savedDeckCards.map((card) => ({
-                        id: nextCardId++,
-                        word: card,
-                        deckId: selectedDeck.deckId,
-                    }));
-                }
-            }
-
-            // Add unique cards only (avoid duplicates across decks)
-            for (const card of deckCards) {
-                if (!allCards.some(existingCard => existingCard.word === card.word)) {
-                    allCards.push(card);
-                }
+                seenCardIds.add(card.id);
+                seenWords.add(normalizedWord);
+                allCards.push({
+                    // Cards are looked up by id during the game, so every card needs a unique one
+                    id: allCards.length,
+                    cardId: card.id,
+                    word,
+                    deckId: selectedDeck.deckId,
+                });
             }
         }
 
@@ -226,11 +228,16 @@ export class GameDeckManager {
         return shuffled;
     }
 
+    private getDeckCards(deckId: string): DeckCard[] {
+        const libraryDeck = DECK_LIBRARY[deckId as keyof typeof DECK_LIBRARY];
+        return libraryDeck ? libraryDeck.cards : getDeckCards(deckId) ?? [];
+    }
+
     // The first few words of a deck, to preview what it contains
     public getSampleCards(deckId: string, count = 3): string[] {
-        const libraryDeck = DECK_LIBRARY[deckId as keyof typeof DECK_LIBRARY];
-        const cards = libraryDeck ? libraryDeck.cards : getDeckCards(deckId) ?? [];
-        return cards.slice(0, count);
+        return this.getDeckCards(deckId)
+            .slice(0, count)
+            .map(card => localize(card.text, this.language));
     }
 
     public getMixedCards(): GameCard[] {

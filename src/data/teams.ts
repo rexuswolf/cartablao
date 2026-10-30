@@ -1,12 +1,36 @@
 import type { Player, Team } from '../Game'
+import { TRANSLATIONS } from '../shared/i18n/translations'
+import { GAME_LANGUAGES, type GameLanguage } from './language'
 
 const TEAMS_STORAGE_KEY = 'charades-teams'
 
+// The name a new team gets: its color ("Red Team"), or its number when the color has no name
+export function defaultTeamName(color: string, number: number, language: GameLanguage): string {
+    const { colorTeam, numberedTeam } = TRANSLATIONS[language].teams
+    return colorTeam[color] ?? numberedTeam(number)
+}
+
+// Teams still using a name the app gave them get that name in the given language; names typed by players stay
+export function localizeTeamNames(teams: Team[], language: GameLanguage): Team[] {
+    return teams.map((team, index) => {
+        const isDefaultName = GAME_LANGUAGES.some(other => {
+            const { colorTeam, numberedTeam } = TRANSLATIONS[other].teams
+            return team.name === colorTeam[team.color] || team.name === numberedTeam(index + 1)
+        })
+        const name = isDefaultName ? defaultTeamName(team.color, index + 1, language) : team.name
+        return name === team.name ? team : { ...team, name }
+    })
+}
+
 // A new game starts with two empty teams; players are added during setup
-export const DEFAULT_TEAMS: Team[] = [
-    { id: 'team-1', name: 'Red Team', color: '#ff5b3a', players: [] },
-    { id: 'team-2', name: 'Blue Team', color: '#3355ff', players: [] },
-]
+export function getDefaultTeams(language: GameLanguage): Team[] {
+    return [
+        { id: 'team-1', name: defaultTeamName('#ff5b3a', 1, language), color: '#ff5b3a', players: [] },
+        { id: 'team-2', name: defaultTeamName('#3355ff', 2, language), color: '#3355ff', players: [] },
+    ]
+}
+
+export const DEFAULT_TEAMS: Team[] = getDefaultTeams('en')
 
 // Teams and players from the last setup in this browser, or null if there are none
 export function loadSavedTeams(): Team[] | null {

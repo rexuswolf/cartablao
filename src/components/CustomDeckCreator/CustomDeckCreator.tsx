@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Language } from "../../data/language";
 import { saveDeck } from "../../data/savedDecks";
-import { generateDeckWithGemini } from "../../services/ai";
+import { GeminiError, generateDeckWithGemini } from "../../services/ai";
+import { useI18n } from "../../shared/i18n/useI18n";
 import ui from "../../shared/styles/ui.module.css";
-import type { DeckCard } from "../Card/DeckCard";
 import { Icon } from "../Icon/Icon";
 import { Sheet } from "../Sheet/Sheet";
 import { Stepper } from "../Stepper/Stepper";
@@ -20,14 +20,19 @@ export function CustomDeckCreator({
 	onDeckCreated,
 	onCancel,
 }: CustomDeckCreatorProps) {
+	const { language: gameLanguage, t } = useI18n();
+	// New decks start in the game's language
+	const [initialLanguage] = useState(
+		() => Language.fromCode(gameLanguage) ?? Language.universal(),
+	);
 	const [mode, setMode] = useState<CreatorMode>("ai");
 
 	// AI Generation State
 	const [topic, setTopic] = useState("");
 	const [cardCount, setCardCount] = useState(30);
-	const [language, setLanguage] = useState<Language>(Language.universal());
+	const [language, setLanguage] = useState<Language>(initialLanguage);
 	const [isGenerating, setIsGenerating] = useState(false);
-	const [generatedCards, setGeneratedCards] = useState<DeckCard[]>([]);
+	const [generatedCards, setGeneratedCards] = useState<string[]>([]);
 	const [error, setError] = useState("");
 	const [saveName, setSaveName] = useState("");
 	const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -36,14 +41,13 @@ export function CustomDeckCreator({
 
 	// Manual Creation State
 	const [deckName, setDeckName] = useState("");
-	const [manualLanguage, setManualLanguage] = useState<Language>(
-		Language.universal(),
-	);
+	const [manualLanguage, setManualLanguage] =
+		useState<Language>(initialLanguage);
 	const [wordInput, setWordInput] = useState("");
 	const [separator, setSeparator] = useState<"newline" | "comma" | "semicolon">(
 		"newline",
 	);
-	const [manualCards, setManualCards] = useState<DeckCard[]>([]);
+	const [manualCards, setManualCards] = useState<string[]>([]);
 	const [manualError, setManualError] = useState("");
 
 	// Remember saved decks so "Save" followed by "Use" doesn't store them twice
@@ -54,7 +58,7 @@ export function CustomDeckCreator({
 
 	const generateDeck = async () => {
 		if (!topic.trim()) {
-			setError("Please enter a topic for your deck");
+			setError(t.creator.enterTopic);
 			return;
 		}
 
@@ -71,11 +75,11 @@ export function CustomDeckCreator({
 			setGeneratedCards(cards);
 			setSavedAiDeckId(null);
 		} catch (err) {
-			const errorMessage =
-				err instanceof Error
-					? err.message
-					: "Failed to generate deck. Please try again.";
-			setError(errorMessage);
+			// A rejected key is the one failure people can fix themselves
+			const isKeyRejected =
+				err instanceof GeminiError &&
+				(err.status === 400 || err.status === 401 || err.status === 403);
+			setError(isKeyRejected ? t.creator.invalidApiKey : t.creator.generateFailed);
 		} finally {
 			setIsGenerating(false);
 		}
@@ -84,7 +88,7 @@ export function CustomDeckCreator({
 	const saveAiDeck = (name: string) => {
 		if (savedAiDeckId) return savedAiDeckId;
 		const deck = saveDeck({
-			deckCards: generatedCards,
+			words: generatedCards,
 			name,
 			language,
 		});
@@ -127,12 +131,12 @@ export function CustomDeckCreator({
 	// Manual deck creation functions
 	const parseWords = () => {
 		if (!wordInput.trim()) {
-			setManualError("Please enter some words");
+			setManualError(t.creator.enterWords);
 			return;
 		}
 
 		if (!deckName.trim()) {
-			setManualError("Please enter a deck name");
+			setManualError(t.creator.enterDeckName);
 			return;
 		}
 
@@ -146,9 +150,7 @@ export function CustomDeckCreator({
 			.filter((word) => word.length > 0);
 
 		if (words.length === 0) {
-			setManualError(
-				"No valid words found. Please check your input and separator.",
-			);
+			setManualError(t.creator.noValidWords);
 			return;
 		}
 
@@ -160,7 +162,7 @@ export function CustomDeckCreator({
 	const saveManualDeck = () => {
 		if (savedManualDeckId) return savedManualDeckId;
 		const deck = saveDeck({
-			deckCards: manualCards,
+			words: manualCards,
 			name: deckName,
 			language: manualLanguage,
 		});
@@ -201,10 +203,10 @@ export function CustomDeckCreator({
 		footer = (
 			<>
 				<button type="button" className={ui.secondary} onClick={handleSaveDeck}>
-					{savedAiDeckId ? "Saved" : "Save"}
+					{savedAiDeckId ? t.creator.saved : t.common.save}
 				</button>
 				<button type="button" className={ui.primary} onClick={handleUseDeck}>
-					Play it
+					{t.creator.playIt}
 				</button>
 			</>
 		);
@@ -216,7 +218,7 @@ export function CustomDeckCreator({
 				onClick={handleGenerateClick}
 				disabled={isGenerating || !topic.trim() || needsApiKey}
 			>
-				{isGenerating ? "Making cards..." : "Make cards"}
+				{isGenerating ? t.creator.makingCards : t.creator.makeCards}
 			</button>
 		);
 	} else if (hasManualCards) {
@@ -227,14 +229,14 @@ export function CustomDeckCreator({
 					className={ui.secondary}
 					onClick={handleSaveManualDeck}
 				>
-					{savedManualDeckId ? "Saved" : "Save"}
+					{savedManualDeckId ? t.creator.saved : t.common.save}
 				</button>
 				<button
 					type="button"
 					className={ui.primary}
 					onClick={handleUseManualDeck}
 				>
-					Play it
+					{t.creator.playIt}
 				</button>
 			</>
 		);
@@ -246,7 +248,7 @@ export function CustomDeckCreator({
 				onClick={parseWords}
 				disabled={!wordInput.trim() || !deckName.trim()}
 			>
-				Make cards
+				{t.creator.makeCards}
 			</button>
 		);
 	}
@@ -257,7 +259,7 @@ export function CustomDeckCreator({
 		onChange: (language: Language) => void,
 	) => (
 		<label className={ui.field} htmlFor={id}>
-			<span className={ui.label}>Language</span>
+			<span className={ui.label}>{t.creator.language}</span>
 			<select
 				id={id}
 				className={ui.input}
@@ -270,7 +272,7 @@ export function CustomDeckCreator({
 			>
 				{Language.getAll().map((lang) => (
 					<option key={lang.code} value={lang.code}>
-						{lang.display}
+						{t.deckLanguages[lang.code]}
 					</option>
 				))}
 			</select>
@@ -278,8 +280,12 @@ export function CustomDeckCreator({
 	);
 
 	return (
-		<Sheet title="Make a deck" onClose={onCancel} tall footer={footer}>
-			<div className={styles.modeSelector} role="group" aria-label="How to make it">
+		<Sheet title={t.creator.title} onClose={onCancel} tall footer={footer}>
+			<div
+				className={styles.modeSelector}
+				role="group"
+				aria-label={t.creator.howToMake}
+			>
 				<button
 					type="button"
 					className={mode === "ai" ? ui.chipSelected : ui.chip}
@@ -287,7 +293,7 @@ export function CustomDeckCreator({
 					onClick={() => setMode("ai")}
 				>
 					<Icon name="sparkle" size={18} />
-					With AI
+					{t.creator.withAi}
 				</button>
 				<button
 					type="button"
@@ -296,31 +302,31 @@ export function CustomDeckCreator({
 					onClick={() => setMode("manual")}
 				>
 					<Icon name="edit" size={18} />
-					Type my own
+					{t.creator.typeMyOwn}
 				</button>
 			</div>
 
 			{showSuccessMessage && (
 				<p className={ui.success} role="status">
-					Saved to My decks.
+					{t.creator.savedToMyDecks}
 				</p>
 			)}
 
 			{mode === "ai" && !hasAiCards && (
 				<>
 					<label className={ui.field} htmlFor="topic">
-						<span className={ui.label}>What should the cards be about?</span>
+						<span className={ui.label}>{t.creator.topic}</span>
 						<input
 							id="topic"
 							className={ui.input}
-							placeholder="Pixar movies, kitchen tools, 90s pop stars..."
+							placeholder={t.creator.topicPlaceholder}
 							value={topic}
 							onChange={(e) => setTopic(e.target.value)}
 							disabled={isGenerating}
 						/>
 					</label>
 					<Stepper
-						label="Number of cards"
+						label={t.creator.numberOfCards}
 						value={cardCount}
 						min={10}
 						max={200}
@@ -332,19 +338,19 @@ export function CustomDeckCreator({
 					{showApiKeyInput && (
 						<div className={styles.apiKeyBox}>
 							<label className={ui.field} htmlFor="apiKey">
-								<span className={ui.label}>Gemini API key</span>
+								<span className={ui.label}>{t.creator.apiKey}</span>
 								<input
 									id="apiKey"
 									type="password"
 									className={ui.input}
 									value={apiKey}
 									onChange={(e) => setApiKey(e.target.value)}
-									placeholder="Paste your key"
+									placeholder={t.creator.apiKeyPlaceholder}
 									autoComplete="off"
 								/>
 							</label>
 							<p className={styles.help}>
-								Making decks with AI needs a free key from{" "}
+								{t.creator.apiKeyHelpBefore}
 								<a
 									href="https://aistudio.google.com/app/apikey"
 									target="_blank"
@@ -352,14 +358,14 @@ export function CustomDeckCreator({
 								>
 									Google AI Studio
 								</a>
-								. Sign in, choose "Create API key" and paste it here.
+								{t.creator.apiKeyHelpAfter}
 							</p>
 						</div>
 					)}
 
 					{isGenerating && (
 						<p className={styles.status} role="status">
-							Making cards about "{topic}"...
+							{t.creator.makingCardsAbout(topic)}
 						</p>
 					)}
 					{error && <p className={ui.error}>{error}</p>}
@@ -369,7 +375,7 @@ export function CustomDeckCreator({
 			{mode === "ai" && hasAiCards && (
 				<>
 					<label className={ui.field} htmlFor="saveName">
-						<span className={ui.label}>Deck name</span>
+						<span className={ui.label}>{t.creator.deckName}</span>
 						<input
 							id="saveName"
 							className={ui.input}
@@ -380,9 +386,11 @@ export function CustomDeckCreator({
 						/>
 					</label>
 					<div className={styles.previewHeader}>
-						<h3 className={ui.sectionTitle}>{generatedCards.length} cards</h3>
+						<h3 className={ui.sectionTitle}>
+							{t.common.cards(generatedCards.length)}
+						</h3>
 						<button type="button" className={ui.pill} onClick={regenerateDeck}>
-							Start over
+							{t.creator.startOver}
 						</button>
 					</div>
 					<ul className={styles.cardsPreview}>
@@ -398,11 +406,11 @@ export function CustomDeckCreator({
 			{mode === "manual" && !hasManualCards && (
 				<>
 					<label className={ui.field} htmlFor="deckName">
-						<span className={ui.label}>Deck name</span>
+						<span className={ui.label}>{t.creator.deckName}</span>
 						<input
 							id="deckName"
 							className={ui.input}
-							placeholder="Family inside jokes"
+							placeholder={t.creator.deckNamePlaceholder}
 							value={deckName}
 							onChange={(e) => setDeckName(e.target.value)}
 						/>
@@ -410,16 +418,10 @@ export function CustomDeckCreator({
 					{languageSelect("manualLanguage", manualLanguage, setManualLanguage)}
 					<div className={ui.field}>
 						<span className={ui.label} id="separator-label">
-							Words are separated by
+							{t.creator.separatedBy}
 						</span>
 						<div className={styles.modeSelector} role="group" aria-labelledby="separator-label">
-							{(
-								[
-									["newline", "New lines"],
-									["comma", "Commas"],
-									["semicolon", "Semicolons"],
-								] as const
-							).map(([value, text]) => (
+							{(["newline", "comma", "semicolon"] as const).map((value) => (
 								<button
 									key={value}
 									type="button"
@@ -427,17 +429,17 @@ export function CustomDeckCreator({
 									aria-pressed={separator === value}
 									onClick={() => setSeparator(value)}
 								>
-									{text}
+									{t.creator.separators[value]}
 								</button>
 							))}
 						</div>
 					</div>
 					<label className={ui.field} htmlFor="wordInput">
-						<span className={ui.label}>Words</span>
+						<span className={ui.label}>{t.creator.words}</span>
 						<textarea
 							id="wordInput"
 							className={ui.input}
-							placeholder={"Dog\nCat\nBird"}
+							placeholder={t.creator.wordsPlaceholder}
 							value={wordInput}
 							onChange={(e) => setWordInput(e.target.value)}
 							rows={8}
@@ -451,10 +453,10 @@ export function CustomDeckCreator({
 				<>
 					<div className={styles.previewHeader}>
 						<h3 className={ui.sectionTitle}>
-							{deckName}: {manualCards.length} cards
+							{t.creator.namedDeckCards(deckName, manualCards.length)}
 						</h3>
 						<button type="button" className={ui.pill} onClick={clearManualDeck}>
-							Start over
+							{t.creator.startOver}
 						</button>
 					</div>
 					<ul className={styles.cardsPreview}>

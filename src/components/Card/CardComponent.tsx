@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { type SwipeEventData, useSwipeable } from "react-swipeable";
+import { useI18n } from "../../shared/i18n/useI18n";
 import { Icon } from "../Icon/Icon";
 import styles from "./CardComponent.module.css";
 import type { GameCard } from "./GameCard";
@@ -31,6 +32,7 @@ export function CardComponent({
 	label,
 	cardsLeft,
 }: CardProps) {
+	const { t } = useI18n();
 	const [swipeX, setSwipeX] = useState(0);
 	const [isAnimating, setIsAnimating] = useState(false);
 
@@ -86,14 +88,14 @@ export function CardComponent({
 					{(label || cardsLeft !== undefined) && (
 						<div className={styles.cardMeta}>
 							<span>{label}</span>
-							{cardsLeft !== undefined && <span>{cardsLeft} left</span>}
+							{cardsLeft !== undefined && <span>{t.game.cardsLeftShort(cardsLeft)}</span>}
 						</div>
 					)}
 					<div className={styles.cardWord} aria-live="polite">
 						{card.word}
 					</div>
 					{showActionButtons && (
-						<p className={styles.cardHint}>Swipe right if they got it</p>
+						<p className={styles.cardHint}>{t.game.swipeHint}</p>
 					)}
 					{showStamp && (
 						<span
@@ -104,7 +106,7 @@ export function CardComponent({
 							}
 							aria-hidden="true"
 						>
-							{swipeDirection === "right" ? "Got it" : "Skip"}
+							{swipeDirection === "right" ? t.game.gotIt : t.game.skip}
 						</span>
 					)}
 				</div>
@@ -116,7 +118,7 @@ export function CardComponent({
 						<span className={`${styles.actionCircle} ${styles.skipCircle}`}>
 							<Icon name="close" size={34} strokeWidth={2.8} />
 						</span>
-						Skip
+						{t.game.skip}
 					</button>
 					<button
 						type="button"
@@ -126,7 +128,7 @@ export function CardComponent({
 						<span className={`${styles.actionCircle} ${styles.correctCircle}`}>
 							<Icon name="check" size={38} strokeWidth={3} />
 						</span>
-						Got it
+						{t.game.gotIt}
 					</button>
 				</div>
 			)}

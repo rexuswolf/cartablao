@@ -1,6 +1,7 @@
 import type { Team, Turn } from "../../Game";
 import type { TeamResult } from "../../services/GameResults";
 import { getReadableTextColor } from "../../shared/libs/color";
+import { useI18n } from "../../shared/i18n/useI18n";
 import ui from "../../shared/styles/ui.module.css";
 import { Icon } from "../Icon/Icon";
 import styles from "./TurnReview.module.css";
@@ -32,6 +33,7 @@ export function TurnReview({
 	onContinue,
 	onEndGame,
 }: TurnReviewProps) {
+	const { t } = useI18n();
 	// Listed in the order they were played, so fixing a card doesn't move it
 	const playOrder = (cardId: number) => turn.playedCardIds.indexOf(cardId);
 	const cards = [
@@ -55,10 +57,10 @@ export function TurnReview({
 					</span>
 				)}
 				<h1 className={ui.title}>
-					{playerName} got {correctCount}
+					{t.review.playerGot(playerName, correctCount)}
 				</h1>
 				{cards.length > 0 && (
-					<p className={ui.subtitle}>Tap a card to fix a mistake.</p>
+					<p className={ui.subtitle}>{t.review.fixHint}</p>
 				)}
 			</div>
 
@@ -70,13 +72,13 @@ export function TurnReview({
 								type="button"
 								className={`${styles.cardRow} ${isCorrect ? styles.correct : ""}`}
 								aria-pressed={isCorrect}
-								aria-label={`${card.word}: ${isCorrect ? "got it" : "skipped"}. Tap to mark as ${isCorrect ? "skipped" : "got it"}.`}
+								aria-label={t.review.cardLabel(card.word, isCorrect)}
 								onClick={() => onToggleCard(card.id, !isCorrect)}
 							>
 								<span className={styles.word}>{card.word}</span>
 								<span className={styles.status} aria-hidden="true">
 									<Icon name={isCorrect ? "check" : "close"} size={16} />
-									{isCorrect ? "Got it" : "Skipped"}
+									{isCorrect ? t.review.gotIt : t.review.skipped}
 								</span>
 							</button>
 						</li>
@@ -84,18 +86,17 @@ export function TurnReview({
 				</ul>
 			) : (
 				<div className={ui.emptyState}>
-					<p>No cards were played this turn.</p>
+					<p>{t.review.noCards}</p>
 				</div>
 			)}
 
 			<section className={ui.section} aria-labelledby="scores-heading">
 				<div className={styles.scoresHeader}>
 					<h2 id="scores-heading" className={ui.sectionTitle}>
-						Scores
+						{t.review.scores}
 					</h2>
 					<span className={styles.cardsLeft}>
-						{cardsLeft} {cardsLeft === 1 ? "card" : "cards"} left in round{" "}
-						{roundNumber} of {totalRounds}
+						{t.review.cardsLeftInRound(cardsLeft, roundNumber, totalRounds)}
 					</span>
 				</div>
 				<ul className={styles.scores}>
@@ -125,7 +126,7 @@ export function TurnReview({
 					className={`${ui.textButton} ${styles.endGame}`}
 					onClick={onEndGame}
 				>
-					End game
+					{t.common.endGame}
 				</button>
 			</div>
 		</div>

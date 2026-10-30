@@ -2,6 +2,7 @@ import type { Team } from "../../Game";
 import type { Round } from "../../Round";
 import { getGameResults } from "../../services/GameResults";
 import { getReadableTextColor } from "../../shared/libs/color";
+import { useI18n } from "../../shared/i18n/useI18n";
 import ui from "../../shared/styles/ui.module.css";
 import styles from "./Scoreboard.module.css";
 
@@ -26,6 +27,7 @@ export function Scoreboard({
 	secondaryLabel,
 	onSecondary,
 }: ScoreboardProps) {
+	const { t } = useI18n();
 	const { teamResults, playerResults, leaderScore } = getGameResults(
 		rounds,
 		teams,
@@ -38,10 +40,10 @@ export function Scoreboard({
 	const topPlayers = playerResults.filter((result) => result.correct > 0);
 
 	let headline: string;
-	if (leaders.length === 0) headline = "No points yet";
-	else if (leaders.length > 1) headline = "It's a tie!";
-	else if (isFinal) headline = `${leaders[0].team.name} wins!`;
-	else headline = `${leaders[0].team.name} is ahead`;
+	if (leaders.length === 0) headline = t.scoreboard.noPoints;
+	else if (leaders.length > 1) headline = t.scoreboard.tie;
+	else if (isFinal) headline = t.scoreboard.wins(leaders[0].team.name);
+	else headline = t.scoreboard.ahead(leaders[0].team.name);
 
 	return (
 		<div className={`${ui.screen} ${styles.scoreboard}`}>
@@ -56,7 +58,7 @@ export function Scoreboard({
 						<div className={styles.teamLabel}>
 							<span className={styles.teamName}>{result.team.name}</span>
 							<span className={styles.skipped}>
-								{result.totalSkipped} skipped
+								{t.scoreboard.skipped(result.totalSkipped)}
 							</span>
 						</div>
 						<div className={styles.track}>
@@ -78,7 +80,7 @@ export function Scoreboard({
 			{topPlayers.length > 0 && (
 				<section className={ui.section} aria-labelledby="players-heading">
 					<h2 id="players-heading" className={ui.sectionTitle}>
-						Top guessers
+						{t.scoreboard.topGuessers}
 					</h2>
 					<ul className={styles.playerChips}>
 						{topPlayers.map((result) => (

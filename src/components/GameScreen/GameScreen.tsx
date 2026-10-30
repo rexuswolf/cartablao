@@ -5,6 +5,7 @@ import { Game } from "../../Game";
 import type { Round } from "../../Round";
 import { getGameResults } from "../../services/GameResults";
 import { useBackHandler } from "../../shared/hooks/useBackHandler";
+import { useI18n } from "../../shared/i18n/useI18n";
 import { getReadableTextColor } from "../../shared/libs/color";
 import ui from "../../shared/styles/ui.module.css";
 import { CardComponent, SWIPE_TRIGGER_THRESHOLD } from "../Card/CardComponent";
@@ -33,6 +34,7 @@ export function GameScreen({
 	config,
 	onGameEnd,
 }: GameScreenProps) {
+	const { t } = useI18n();
 	const [game] = useState(() => new Game(config, teams, deck));
 	const [timeLeft, setTimeLeft] = useState(config.secondsPerRound);
 	const [isTimerRunning, setIsTimerRunning] = useState(
@@ -222,10 +224,10 @@ export function GameScreen({
 
 	const endConfirm = showEndConfirm && (
 		<ConfirmSheet
-			title="End the game?"
-			message="The scores so far become the final scores. This can't be undone."
-			confirmLabel="End game"
-			cancelLabel="Keep playing"
+			title={t.game.endConfirmTitle}
+			message={t.game.endConfirmMessage}
+			confirmLabel={t.common.endGame}
+			cancelLabel={t.game.keepPlaying}
 			onConfirm={confirmEndGame}
 			onCancel={cancelEndGame}
 		/>
@@ -253,10 +255,12 @@ export function GameScreen({
 		const lastPlayer = teams
 			.flatMap((team) => team.players)
 			.find((player) => player.id === lastTurn.playerId);
-		let continueLabel = `Next: ${currentPlayer?.name ?? "next player"}`;
-		if (game.isGameFinished()) continueLabel = "See final scores";
+		let continueLabel = t.game.nextPlayer(
+			currentPlayer?.name ?? t.game.nextPlayerFallback,
+		);
+		if (game.isGameFinished()) continueLabel = t.game.seeFinalScores;
 		else if (game.isRoundFinished())
-			continueLabel = `See round ${roundNumber} results`;
+			continueLabel = t.game.seeRoundResults(roundNumber);
 
 		return (
 			<MainLayout background="var(--paper)">
@@ -287,16 +291,19 @@ export function GameScreen({
 				{turnState === "preparing" ? (
 					<div className={styles.preparation}>
 						<div className={styles.preparationText}>
-							<p className={styles.preparationLead}>Pass the phone to</p>
+							<p className={styles.preparationLead}>{t.game.passPhoneTo}</p>
 							<h1 className={styles.preparationName}>{currentPlayer?.name}</h1>
 							<p className={styles.preparationMeta}>
-								{currentTeam?.name}, round {roundNumber} of {totalRounds}.{" "}
-								{cardsLeft} {cardsLeft === 1 ? "card" : "cards"} left.
+								{t.game.preparationMeta(
+									currentTeam?.name ?? "",
+									roundNumber,
+									totalRounds,
+									cardsLeft,
+								)}
 							</p>
 						</div>
 						<p className={styles.preparationTip}>
-							Only {currentPlayer?.name} should see the screen. Act out each
-							card without saying the word.
+							{t.game.preparationTip(currentPlayer?.name ?? "")}
 						</p>
 						<div className={styles.bottomActions}>
 							<button
@@ -304,14 +311,14 @@ export function GameScreen({
 								className={ui.primary}
 								onClick={handleStartTurn}
 							>
-								Start turn
+								{t.game.startTurn}
 							</button>
 							<button
 								type="button"
 								className={`${ui.textButton} ${styles.endTurn}`}
 								onClick={requestEndGame}
 							>
-								End game
+								{t.common.endGame}
 							</button>
 						</div>
 					</div>
@@ -346,7 +353,7 @@ export function GameScreen({
 							className={`${ui.textButton} ${styles.endTurn}`}
 							onClick={handleEndTurn}
 						>
-							End turn early
+							{t.game.endTurnEarly}
 						</button>
 					</>
 				)}

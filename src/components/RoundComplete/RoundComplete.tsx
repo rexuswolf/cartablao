@@ -1,5 +1,6 @@
 import type { Team } from "../../Game";
 import type { Round } from "../../Round";
+import { useI18n } from "../../shared/i18n/useI18n";
 import { Scoreboard } from "../Scoreboard/Scoreboard";
 
 interface RoundCompleteProps {
@@ -19,15 +20,16 @@ export function RoundComplete({
 	onNextRound,
 	onEndGame,
 }: RoundCompleteProps) {
+	const { t } = useI18n();
 	return (
 		<Scoreboard
 			rounds={rounds}
 			teams={teams}
-			badge={`Round ${currentRoundNumber} of ${totalRounds} done`}
+			badge={t.scoreboard.roundDone(currentRoundNumber, totalRounds)}
 			isFinal={false}
-			actionLabel={`Start round ${currentRoundNumber + 1}`}
+			actionLabel={t.scoreboard.startRound(currentRoundNumber + 1)}
 			onAction={onNextRound}
-			secondaryLabel="End game"
+			secondaryLabel={t.common.endGame}
 			onSecondary={onEndGame}
 		/>
 	);

@@ -4,7 +4,7 @@ import type { Team } from '../src/Game';
 import { Round } from '../src/Round';
 import { getGameResults } from '../src/services/GameResults';
 
-const card = (id: number): GameCard => ({ id, word: `Card ${id}`, deckId: 'test' });
+const card = (id: number): GameCard => ({ id, cardId: `card-${id}`, word: `Card ${id}`, deckId: 'test' });
 
 const teams: Team[] = [
     { id: 'red', name: 'Red', color: '#f00', players: [{ id: 'ana', name: 'Ana', teamId: 'red' }] },

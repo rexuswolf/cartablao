@@ -1,16 +1,17 @@
 import type { DeckCard } from "../../components/Card/DeckCard";
-import type { Language } from "../language";
+import type { LocalizedText } from "../language";
 
+// A built-in deck: one topic, playable in every game language
 export class Deck {
     id: string;
-    name: string;
-    language: Language;
+    emoji: string;
+    name: LocalizedText;
     cards: DeckCard[];
 
-    constructor({ id, name, language, cards }: { id: string; name: string; language: Language; cards: DeckCard[]; }) {
+    constructor({ id, emoji, name, cards }: { id: string; emoji: string; name: LocalizedText; cards: DeckCard[]; }) {
         this.id = id;
+        this.emoji = emoji;
         this.name = name;
-        this.language = language;
         this.cards = cards;
     }
 }

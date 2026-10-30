@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Language } from "../../data/language";
 import type { GameDeckManagerState } from "../../services/GameDeckManager";
 import { GameDeckManager } from "../../services/GameDeckManager";
+import { useI18n } from "../../shared/i18n/useI18n";
 import { getReadableTextColor } from "../../shared/libs/color";
 import { getDeckColor, splitDeckName } from "../../shared/libs/deckStyle";
 import ui from "../../shared/styles/ui.module.css";
@@ -23,16 +23,16 @@ export function DeckSelector({
 	onDeckStateChange,
 	onClose,
 }: DeckSelectorProps) {
+	const { language, t } = useI18n();
 	// Start from the selection held by App so both stay in sync
 	const [deckManager] = useState(() => {
-		const manager = new GameDeckManager();
+		const manager = new GameDeckManager(language);
 		manager.selectOnlyDecks(
 			currentDeckState.selectedDecks.map((deck) => deck.deckId),
 		);
 		return manager;
 	});
 	const [activeTab, setActiveTab] = useState<TabType>("official");
-	const [languageFilter, setLanguageFilter] = useState<string>("all");
 	const [showDeckExplorer, setShowDeckExplorer] = useState(false);
 
 	const handleToggleDeck = (deckId: string) => {
@@ -61,15 +61,7 @@ export function DeckSelector({
 	const officialDecks = deckManager.getOfficialDecks();
 	const customDecks = deckManager.getCustomDecks();
 
-	// Filter decks by language
-	const filterByLanguage = (decks: typeof officialDecks) =>
-		languageFilter === "all"
-			? decks
-			: decks.filter((deck) => deck.language.code === languageFilter);
-	const filteredOfficialDecks = filterByLanguage(officialDecks);
-	const filteredCustomDecks = filterByLanguage(customDecks);
-	const visibleDecks =
-		activeTab === "official" ? filteredOfficialDecks : filteredCustomDecks;
+	const visibleDecks = activeTab === "official" ? officialDecks : customDecks;
 
 	const selectedDecks = currentDeckState.selectedDecks;
 	const selectedTitles = selectedDecks.map(
@@ -77,7 +69,7 @@ export function DeckSelector({
 	);
 	const selectedSummary =
 		selectedTitles.length > 2
-			? `${selectedTitles.slice(0, 2).join(", ")} and ${selectedTitles.length - 2} more`
+			? `${selectedTitles.slice(0, 2).join(", ")}${t.common.andMore(selectedTitles.length - 2)}`
 			: selectedTitles.join(", ");
 
 	if (showDeckExplorer) {
@@ -93,7 +85,7 @@ export function DeckSelector({
 
 	return (
 		<Sheet
-			title="Choose decks"
+			title={t.deckSelector.title}
 			onClose={onClose}
 			tall
 			footer={
@@ -115,25 +107,24 @@ export function DeckSelector({
 						<span className={styles.inGameText}>
 							<span className={styles.inGameNames}>{selectedSummary}</span>
 							<span className={styles.inGameCount}>
-								{selectedDecks.length}{" "}
-								{selectedDecks.length === 1 ? "deck" : "decks"} in the game
+								{t.deckSelector.inGame(selectedDecks.length)}
 							</span>
 						</span>
 					</div>
 					<button type="button" className={ui.primary} onClick={onClose}>
-						Use {currentDeckState.mixedCards.length} cards
+						{t.deckSelector.useCards(currentDeckState.mixedCards.length)}
 					</button>
 				</div>
 			}
 		>
-			<div className={styles.tabs} role="group" aria-label="Deck source">
+			<div className={styles.tabs} role="group" aria-label={t.deckSelector.source}>
 				<button
 					type="button"
 					className={activeTab === "official" ? ui.chipSelected : ui.chip}
 					aria-pressed={activeTab === "official"}
 					onClick={() => setActiveTab("official")}
 				>
-					Built-in ({filteredOfficialDecks.length})
+					{t.deckSelector.builtIn(officialDecks.length)}
 				</button>
 				<button
 					type="button"
@@ -141,32 +132,8 @@ export function DeckSelector({
 					aria-pressed={activeTab === "custom"}
 					onClick={() => setActiveTab("custom")}
 				>
-					My decks ({filteredCustomDecks.length})
+					{t.deckSelector.myDecks(customDecks.length)}
 				</button>
-			</div>
-
-			<div className={ui.chips} role="group" aria-label="Language">
-				<button
-					type="button"
-					className={languageFilter === "all" ? ui.chipSelected : ui.chip}
-					aria-pressed={languageFilter === "all"}
-					onClick={() => setLanguageFilter("all")}
-				>
-					All languages
-				</button>
-				{Language.getAll().map((language) => (
-					<button
-						key={language.code}
-						type="button"
-						className={
-							languageFilter === language.code ? ui.chipSelected : ui.chip
-						}
-						aria-pressed={languageFilter === language.code}
-						onClick={() => setLanguageFilter(language.code)}
-					>
-						{language.display}
-					</button>
-				))}
 			</div>
 
 			{visibleDecks.length > 0 ? (
@@ -174,6 +141,14 @@ export function DeckSelector({
 					{visibleDecks.map((deck, index) => {
 						const color = getDeckColor(deck.deckId);
 						const { symbol, title } = splitDeckName(deck.name);
+						// Saved decks keep the language they were written in
+						const deckLanguage = deck.language
+							? t.deckLanguages[deck.language.code]
+							: null;
+						const textLanguage =
+							deck.language && deck.language.code !== "universal"
+								? deck.language.code
+								: language;
 						return (
 							<li key={deck.deckId} className={styles.deckCell}>
 								<button
@@ -189,7 +164,9 @@ export function DeckSelector({
 											: undefined,
 									}}
 									aria-pressed={deck.isSelected}
-									aria-label={`${title}, ${deck.cardCount} cards, ${deck.language.display}`}
+									aria-label={[title, t.common.cards(deck.cardCount), deckLanguage]
+										.filter(Boolean)
+										.join(", ")}
 									onClick={() => handleToggleDeck(deck.deckId)}
 								>
 									{symbol && (
@@ -197,10 +174,14 @@ export function DeckSelector({
 											{symbol}
 										</span>
 									)}
-									<span className={styles.deckTitle} lang={deck.language.code === "es" ? "es" : "en"}>
+									<span className={styles.deckTitle} lang={textLanguage}>
 										{title}
 									</span>
-									<span className={styles.samples} aria-hidden="true">
+									<span
+										className={styles.samples}
+										aria-hidden="true"
+										lang={textLanguage}
+									>
 										{deckManager.getSampleCards(deck.deckId).map((word, i) => (
 											<span key={`${i}-${word}`} className={styles.sample}>
 												<span className={styles.sampleText}>{word}</span>
@@ -208,8 +189,8 @@ export function DeckSelector({
 										))}
 									</span>
 									<span className={styles.deckMeta}>
-										<span>{deck.cardCount} cards</span>
-										<span>{deck.language.display}</span>
+										<span>{t.common.cards(deck.cardCount)}</span>
+										{deckLanguage && <span>{deckLanguage}</span>}
 									</span>
 									{deck.isSelected && (
 										<span className={styles.check} aria-hidden="true">
@@ -223,22 +204,20 @@ export function DeckSelector({
 				</ul>
 			) : (
 				<div className={ui.emptyState}>
-					<p>No decks in this language yet.</p>
-					{activeTab === "custom" && (
-						<p>Make one with "Make a deck" on the setup screen.</p>
-					)}
+					<p>{t.deckSelector.noSavedDecks}</p>
+					<p>{t.deckSelector.makeOneHint}</p>
 				</div>
 			)}
 
 			<div className={styles.actions}>
 				<button type="button" className={ui.pill} onClick={handleSelectAll}>
-					Select all
+					{t.deckSelector.selectAll}
 				</button>
 				<button type="button" className={ui.pill} onClick={handleDeselectAll}>
-					Clear
+					{t.deckSelector.clear}
 				</button>
 				<button type="button" className={ui.pill} onClick={handleViewCards}>
-					Preview cards
+					{t.deckSelector.preview}
 				</button>
 			</div>
 		</Sheet>

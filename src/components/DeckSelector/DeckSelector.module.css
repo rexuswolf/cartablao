@@ -133,6 +133,8 @@
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
+	/* Lets long deck names truncate instead of widening the sheet */
+	min-width: 0;
 }
 
 .inGame {

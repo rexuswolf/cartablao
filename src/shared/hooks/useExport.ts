@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { exportDecks } from '../../data/savedDecks';
+import { useI18n } from '../i18n/useI18n';
 
 interface ExportResult {
     success: boolean;
@@ -8,6 +9,7 @@ interface ExportResult {
 }
 
 export function useExport() {
+    const { t } = useI18n();
     const [isExporting, setIsExporting] = useState<boolean>(false);
     const [exportMessage, setExportMessage] = useState<string>('');
     const [exportSuccess, setExportSuccess] = useState<boolean>(false);
@@ -33,7 +35,7 @@ export function useExport() {
 
             const result: ExportResult = {
                 success: true,
-                message: 'Decks exported successfully!',
+                message: t.importExport.exported,
                 filename
             };
 
@@ -45,7 +47,7 @@ export function useExport() {
         } catch (error) {
             const result: ExportResult = {
                 success: false,
-                message: `Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+                message: t.importExport.exportFailed(error instanceof Error ? error.message : t.importExport.unknownError)
             };
 
             setExportSuccess(false);
@@ -54,7 +56,7 @@ export function useExport() {
 
             return result;
         }
-    }, []);
+    }, [t]);
 
     const clearExportMessage = useCallback(() => {
         setExportMessage('');
