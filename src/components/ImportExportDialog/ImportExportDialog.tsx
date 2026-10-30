@@ -1,6 +1,9 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useExport } from "../../shared/hooks/useExport";
 import { useImport } from "../../shared/hooks/useImport";
+import ui from "../../shared/styles/ui.module.css";
+import { Icon } from "../Icon/Icon";
+import { Sheet } from "../Sheet/Sheet";
 import styles from "./ImportExportDialog.module.css";
 
 interface ImportExportDialogProps {
@@ -13,6 +16,7 @@ export function ImportExportDialog({
 	onImportSuccess,
 }: ImportExportDialogProps) {
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const [fileError, setFileError] = useState("");
 	const {
 		isExporting,
 		exportMessage,
@@ -32,23 +36,16 @@ export function ImportExportDialog({
 		hasImportMessage,
 	} = useImport();
 
-	const handleExportClick = () => {
-		const result = handleExport();
-		if (result.success) {
-			// Export was successful
-			console.log("Export successful:", result.filename);
-		}
-	};
-
 	const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];
 		if (!file) return;
 
 		const validation = validateFile(file);
 		if (!validation.isValid) {
-			console.error("File validation failed:", validation.error);
+			setFileError(validation.error ?? "This file can't be imported.");
 			return;
 		}
+		setFileError("");
 
 		handleImport(file).then((result) => {
 			if (result.success && onImportSuccess) {
@@ -69,75 +66,52 @@ export function ImportExportDialog({
 	};
 
 	return (
-		<div className={styles.modalOverlay}>
-			<div className={styles.modal}>
-				<div className={styles.modalHeader}>
-					<h3>📥📤 Import/Export Decks</h3>
-					<button
-						type="button"
-						className={styles.closeButton}
-						onClick={handleClose}
-					>
-						×
-					</button>
-				</div>
+		<Sheet title="Import or export" onClose={handleClose}>
+			<section className={ui.section}>
+				<h3 className={ui.sectionTitle}>Export</h3>
+				<p className={styles.description}>
+					Save all your decks to a file to back them up or share them with
+					friends.
+				</p>
+				<button
+					type="button"
+					className={ui.secondary}
+					onClick={handleExport}
+					disabled={isExporting}
+				>
+					<Icon name="download" size={18} />
+					{isExporting ? "Exporting..." : "Export all decks"}
+				</button>
+				{hasExportMessage && (
+					<p className={exportSuccess ? ui.success : ui.error}>{exportMessage}</p>
+				)}
+			</section>
 
-				<div className={styles.modalContent}>
-					{/* Export Section */}
-					<div className={styles.exportSection}>
-						<h4>📤 Export Decks</h4>
-						<p>Download all your saved decks as a JSON file.</p>
-						<button
-							type="button"
-							className={styles.exportBtn}
-							onClick={handleExportClick}
-							disabled={isExporting}
-						>
-							{isExporting ? "Exporting..." : "📥 Export All Decks"}
-						</button>
-						{hasExportMessage && (
-							<div
-								className={`${styles.message} ${exportSuccess ? styles.success : styles.error}`}
-							>
-								{exportMessage}
-							</div>
-						)}
-					</div>
-
-					{/* Import Section */}
-					<div className={styles.importSection}>
-						<h4>📥 Import Decks</h4>
-						<p>Import decks from a previously exported JSON file.</p>
-						<input
-							ref={fileInputRef}
-							type="file"
-							accept=".json"
-							onChange={handleImportFile}
-							className={styles.fileInput}
-							disabled={isImporting}
-						/>
-						{hasImportMessage && (
-							<div
-								className={`${styles.message} ${importSuccess ? styles.success : styles.error}`}
-							>
-								{importMessage}
-							</div>
-						)}
-					</div>
-
-					{/* Tips Section */}
-					<div className={styles.tipsSection}>
-						<h4>💡 Tips</h4>
-						<ul>
-							<li>Exported files contain all your deck data</li>
-							<li>Import files should be in the same format as exports</li>
-							<li>Duplicate deck names will be automatically renamed</li>
-							<li>You can share exported files with friends</li>
-							<li>File size must be less than 10MB</li>
-						</ul>
-					</div>
-				</div>
-			</div>
-		</div>
+			<section className={ui.section}>
+				<h3 className={ui.sectionTitle}>Import</h3>
+				<p className={styles.description}>
+					Add decks from an exported .json file (up to 10 MB). Decks with a
+					name you already use get a number added.
+				</p>
+				<label className={`${ui.accent} ${styles.fileButton}`}>
+					<Icon name="upload" size={18} />
+					{isImporting ? "Importing..." : "Choose a file"}
+					<input
+						ref={fileInputRef}
+						type="file"
+						accept=".json,application/json"
+						onChange={handleImportFile}
+						className={styles.fileInput}
+						disabled={isImporting}
+					/>
+				</label>
+				{fileError && <p className={ui.error}>{fileError}</p>}
+				{hasImportMessage && (
+					<p className={importSuccess ? ui.success : ui.error}>
+						{importMessage}
+					</p>
+				)}
+			</section>
+		</Sheet>
 	);
 }

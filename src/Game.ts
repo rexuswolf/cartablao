@@ -32,7 +32,7 @@ export interface GameConfig {
     numberOfRounds: number
 }
 
-export type GameState = 'idle' | 'config' | 'team-setup' | 'playing' | 'finished'
+export type GameState = 'idle' | 'setup' | 'playing' | 'finished'
 
 export class Game {
     private config: GameConfig;

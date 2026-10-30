@@ -3,11 +3,13 @@ import type { Deck } from "../../data/Decks/Deck";
 import {
 	deleteDeck,
 	getDeckCards,
-	getDeckStats,
 	getSavedDecks,
 	renameDeck,
 } from "../../data/savedDecks";
+import ui from "../../shared/styles/ui.module.css";
+import { Icon } from "../Icon/Icon";
 import { ImportExportDialog } from "../ImportExportDialog/ImportExportDialog";
+import { Sheet } from "../Sheet/Sheet";
 import styles from "./SavedDecksManager.module.css";
 
 interface SavedDecksManagerProps {
@@ -22,7 +24,9 @@ export function SavedDecksManager({
 	const [savedDecks, setSavedDecks] = useState<Deck[]>(() => getSavedDecks());
 	const [editingDeckId, setEditingDeckId] = useState<string | null>(null);
 	const [editName, setEditName] = useState("");
-	const [stats] = useState(() => getDeckStats());
+	const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
+		null,
+	);
 	const [showImportExport, setShowImportExport] = useState(false);
 
 	const handleUseDeck = (deckId: string) => {
@@ -36,6 +40,7 @@ export function SavedDecksManager({
 		if (deleteDeck(deckId)) {
 			setSavedDecks(getSavedDecks());
 		}
+		setConfirmingDeleteId(null);
 	};
 
 	const handleStartRename = (deck: Deck) => {
@@ -61,159 +66,140 @@ export function SavedDecksManager({
 	};
 
 	return (
-		<div className={styles.modalOverlay}>
-			<div className={`${styles.modal} ${styles.savedDecksModal}`}>
-				<div className={styles.modalHeader}>
-					<h2>💾 Saved Decks</h2>
-					<div className={styles.modalHeaderActions}>
+		<>
+			<Sheet
+				title="My decks"
+				onClose={onClose}
+				tall
+				headerAction={
+					<button
+						type="button"
+						className={ui.pill}
+						onClick={() => setShowImportExport(true)}
+					>
+						Import or export
+					</button>
+				}
+			>
+				{savedDecks.length === 0 ? (
+					<div className={ui.emptyState}>
+						<h3 className={ui.sectionTitle}>No saved decks yet</h3>
+						<p>Decks you make or import show up here.</p>
 						<button
 							type="button"
-							className={styles.importExportBtn}
+							className={ui.accent}
 							onClick={() => setShowImportExport(true)}
 						>
-							📥 Import / 📤 Export
+							<Icon name="upload" size={18} />
+							Import decks
 						</button>
-						<button
-							type="button"
-							className={styles.closeButton}
-							onClick={onClose}
-						>
-							×
-						</button>
-					</div>
-				</div>
-
-				{savedDecks.length === 0 ? (
-					<div className={styles.emptyState}>
-						<div className={styles.emptyIcon}>📚</div>
-						<h3>No Saved Decks</h3>
-						<p>You haven't saved any custom decks yet.</p>
-						<p>Generate a deck and save it to see it here!</p>
-						<div className={styles.emptyStateActions}>
-							<button
-								type="button"
-								className={styles.importDecksBtn}
-								onClick={() => setShowImportExport(true)}
-							>
-								📥 Import Decks
-							</button>
-						</div>
 					</div>
 				) : (
-					<>
-						<div className={styles.statsSection}>
-							<div className={styles.statItem}>
-								<span className={styles.statLabel}>Total Decks:</span>
-								<span className={styles.statValue}>{stats.total}</span>
-							</div>
-							<div className={styles.statItem}>
-								<span className={styles.statLabel}>Total Cards:</span>
-								<span className={styles.statValue}>{stats.totalCards}</span>
-							</div>
-						</div>
-
-						<div className={styles.decksList}>
-							{savedDecks.map((deck) => (
-								<div key={deck.id} className={styles.savedDeckItem}>
-									<div className={styles.deckInfo}>
+					<ul className={styles.decksList}>
+						{savedDecks.map((deck) => (
+							<li key={deck.id} className={styles.savedDeckItem}>
+								{editingDeckId === deck.id ? (
+									<form
+										className={styles.renameForm}
+										onSubmit={(event) => {
+											event.preventDefault();
+											if (editName.trim()) handleSaveRename(deck.id);
+										}}
+									>
+										<input
+											className={ui.input}
+											value={editName}
+											onChange={(e) => setEditName(e.target.value)}
+											aria-label="Deck name"
+										/>
+										<div className={styles.rowActions}>
+											<button
+												type="button"
+												className={ui.secondary}
+												onClick={handleCancelRename}
+											>
+												Cancel
+											</button>
+											<button
+												type="submit"
+												className={ui.accent}
+												disabled={!editName.trim()}
+											>
+												Save name
+											</button>
+										</div>
+									</form>
+								) : (
+									<>
 										<div className={styles.deckHeader}>
-											{editingDeckId === deck.id ? (
-												<input
-													type="text"
-													value={editName}
-													onChange={(e) => setEditName(e.target.value)}
-													className={styles.renameInput}
-												/>
-											) : (
-												<h3>{deck.name}</h3>
-											)}
-											<div className={styles.deckActions}>
-												{editingDeckId === deck.id ? (
-													<>
-														<button
-															type="button"
-															className={styles.saveRenameBtn}
-															onClick={() => handleSaveRename(deck.id)}
-															disabled={!editName.trim()}
-														>
-															✓
-														</button>
-														<button
-															type="button"
-															className={styles.cancelRenameBtn}
-															onClick={handleCancelRename}
-														>
-															✗
-														</button>
-													</>
-												) : (
-													<>
-														<button
-															type="button"
-															className={styles.renameBtn}
-															onClick={() => handleStartRename(deck)}
-														>
-															✏️
-														</button>
-														<button
-															type="button"
-															className={styles.deleteBtn}
-															onClick={() => handleDeleteDeck(deck.id)}
-														>
-															🗑️
-														</button>
-													</>
-												)}
+											<div className={styles.deckInfo}>
+												<h3 className={styles.deckName}>{deck.name}</h3>
+												<p className={styles.deckMeta}>
+													{deck.language.display}, {deck.cards.length} cards
+												</p>
 											</div>
+											<button
+												type="button"
+												className={ui.iconButton}
+												aria-label={`Rename ${deck.name}`}
+												onClick={() => handleStartRename(deck)}
+											>
+												<Icon name="edit" size={18} />
+											</button>
+											<button
+												type="button"
+												className={ui.iconButton}
+												aria-label={`Delete ${deck.name}`}
+												onClick={() => setConfirmingDeleteId(deck.id)}
+											>
+												<Icon name="trash" size={18} />
+											</button>
 										</div>
-										<div className={styles.deckDetails}>
-											<p className={styles.deckTopic}>Topic: {deck.name}</p>
-											<p className={styles.deckLanguage}>
-												Language: {deck.language.display}
-											</p>
-											<p className={styles.deckCards}>
-												{deck.cards.length} cards
-											</p>
-										</div>
-									</div>
-									<div className={styles.deckPreview}>
-										<div className={styles.previewCards}>
-											{deck.cards.slice(0, 3).map((card) => (
-												<div
-													key={`${card}-${deck.id}`}
-													className={styles.previewCard}
+										<p className={styles.preview}>
+											{deck.cards.slice(0, 4).join(", ")}
+											{deck.cards.length > 4 &&
+												` and ${deck.cards.length - 4} more`}
+										</p>
+										{confirmingDeleteId === deck.id ? (
+											<div className={styles.rowActions}>
+												<button
+													type="button"
+													className={ui.secondary}
+													onClick={() => setConfirmingDeleteId(null)}
 												>
-													<div className={styles.cardWord}>{card}</div>
-												</div>
-											))}
-											{deck.cards.length > 3 && (
-												<div className={styles.moreCards}>
-													+{deck.cards.length - 3} more
-												</div>
-											)}
-										</div>
-										<button
-											type="button"
-											className={styles.useDeckBtn}
-											onClick={() => handleUseDeck(deck.id)}
-										>
-											Use This Deck
-										</button>
-									</div>
-								</div>
-							))}
-						</div>
-					</>
+													Keep it
+												</button>
+												<button
+													type="button"
+													className={ui.danger}
+													onClick={() => handleDeleteDeck(deck.id)}
+												>
+													Delete deck
+												</button>
+											</div>
+										) : (
+											<button
+												type="button"
+												className={`${ui.accent} ${ui.block}`}
+												onClick={() => handleUseDeck(deck.id)}
+											>
+												Play this deck
+											</button>
+										)}
+									</>
+								)}
+							</li>
+						))}
+					</ul>
 				)}
+			</Sheet>
 
-				{/* Import/Export Dialog */}
-				{showImportExport && (
-					<ImportExportDialog
-						onClose={() => setShowImportExport(false)}
-						onImportSuccess={handleImportSuccess}
-					/>
-				)}
-			</div>
-		</div>
+			{showImportExport && (
+				<ImportExportDialog
+					onClose={() => setShowImportExport(false)}
+					onImportSuccess={handleImportSuccess}
+				/>
+			)}
+		</>
 	);
 }

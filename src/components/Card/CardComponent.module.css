@@ -1,214 +1,164 @@
-/* Card container */
-.cardContainer {
-	width: 100%;
-	max-width: 500px;
-	height: 450px;
-	position: relative;
-	margin-bottom: 2rem;
+.cardArea {
+	flex: 1;
 	display: flex;
 	flex-direction: column;
+	gap: 22px;
+	min-height: 0;
 }
 
-.cardContainer.noActionButtons {
-	height: 400px;
+.stack {
+	position: relative;
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Portrait cards that shrink on short screens so the buttons stay visible */
+.backCard,
+.middleCard,
+.card {
+	width: min(100%, 310px, calc((100dvh - 370px) * 0.75));
+	min-width: 210px;
+	aspect-ratio: 3 / 4;
+	border: var(--border);
+	border-radius: var(--radius-lg);
+}
+
+.backCard,
+.middleCard {
+	position: absolute;
+}
+
+.backCard {
+	background: var(--white);
+	transform: rotate(6deg) translate(10px, 4px);
+}
+
+.middleCard {
+	background: var(--sun);
+	transform: rotate(-5deg) translate(-8px, 2px);
 }
 
 .card {
-	width: 100%;
-	height: 400px;
-	background: rgba(255, 255, 255, 0.95);
-	border-radius: 20px;
+	position: relative;
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	padding: 2rem;
-	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-	position: relative;
-	overflow: hidden;
+	padding: 18px 20px;
+	background: var(--white);
+	color: var(--ink);
+	box-shadow: var(--shadow-lg);
 	cursor: grab;
-	transition: transform 0.3s ease;
+	user-select: none;
+	touch-action: pan-y;
+	animation: dealIn 260ms cubic-bezier(0.2, 0.9, 0.3, 1.15);
 }
 
 .card:active {
 	cursor: grabbing;
-	transform: scale(0.98);
+}
+
+.cardMeta {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--ink-soft);
 }
 
 .cardWord {
-	font-size: 3rem;
-	font-weight: bold;
-	color: #333;
-	text-align: center;
-	margin-bottom: 2rem;
-	text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.cardInstructions {
-	position: absolute;
-	bottom: 1rem;
-	left: 0;
-	right: 0;
-	display: flex;
-	justify-content: space-between;
-	padding: 0 2rem;
-}
-
-.swipeHint {
-	background: rgba(0, 0, 0, 0.1);
-	color: #333;
-	padding: 0.5rem 1rem;
-	border-radius: 15px;
-	font-size: 0.9rem;
-	font-weight: 500;
-}
-
-.swipeHintLeft {
-	color: #ff6b6b;
-}
-
-.swipeHintRight {
-	color: #51cf66;
-}
-
-/* Swipe animations */
-.cardSwipingLeft {
-	transform: translateX(-100px) rotate(-10deg);
-	opacity: 0.7;
-	background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-	color: white;
-}
-
-.cardSwipingRight {
-	transform: translateX(100px) rotate(10deg);
-	opacity: 0.7;
-	background: linear-gradient(135deg, #51cf66, #40c057);
-	color: white;
-}
-
-.cardSwipingLeft .cardWord,
-.cardSwipingRight .cardWord {
-	color: white;
-}
-
-.cardSwipingLeft .cardCategory,
-.cardSwipingRight .cardCategory {
-	background: rgba(255, 255, 255, 0.2);
-	color: white;
-}
-
-/* Swipe overlay */
-.swipeOverlay {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
+	flex: 1;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: rgba(0, 0, 0, 0.1);
-	border-radius: 20px;
-	z-index: 10;
+	text-align: center;
+	font-family: var(--font-display);
+	font-size: clamp(34px, 11vw, 50px);
+	line-height: 1.02;
+	text-wrap: balance;
+	overflow-wrap: anywhere;
 }
 
-.swipeText {
-	font-size: 2rem;
-	font-weight: bold;
-	text-transform: uppercase;
-	letter-spacing: 2px;
-	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-	animation: swipeTextPulse 0.5s ease-in-out;
+.cardHint {
+	text-align: center;
+	font-size: 14px;
+	color: var(--ink-soft);
 }
 
-.swipeTextSkip {
-	color: #ff6b6b;
+.stamp {
+	position: absolute;
+	top: 26px;
+	padding: 4px 14px;
+	border: 4px solid currentColor;
+	border-radius: 12px;
+	font-family: var(--font-display);
+	font-size: 28px;
+	background: var(--white);
 }
 
-.swipeTextCorrect {
-	color: #51cf66;
+.stampCorrect {
+	composes: stamp;
+	left: 18px;
+	color: #13804a;
+	rotate: -12deg;
 }
 
-@keyframes swipeTextPulse {
-	0% {
-		opacity: 0;
-		transform: scale(0.8);
-	}
-	50% {
-		opacity: 1;
-		transform: scale(1.1);
-	}
-	100% {
-		opacity: 1;
-		transform: scale(1);
-	}
+.stampSkip {
+	composes: stamp;
+	right: 18px;
+	color: var(--danger);
+	rotate: 12deg;
 }
 
-/* Action buttons */
 .actionButtons {
 	display: flex;
-	gap: 1rem;
-	margin-top: 1rem;
 	justify-content: center;
-	flex: 1;
-	align-items: flex-start;
+	gap: 44px;
 }
 
 .actionButton {
-	padding: 0.75rem 1.5rem;
-	border: none;
-	border-radius: 25px;
-	font-size: 1rem;
-	font-weight: bold;
-	cursor: pointer;
-	transition: all 0.3s ease;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font-weight: 700;
+	font-size: 16px;
 }
 
-.skipButton {
-	background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-	color: white;
+.actionCircle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 84px;
+	height: 84px;
+	border: var(--border);
+	border-radius: 50%;
+	color: var(--ink);
+	box-shadow: 4px 4px 0 var(--ink);
+	transition: transform 80ms ease, box-shadow 80ms ease;
 }
 
-.skipButton:hover {
-	background: linear-gradient(135deg, #ff5252, #d63031);
-	transform: translateY(-2px);
-	box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+.actionButton:active .actionCircle {
+	transform: translate(3px, 3px);
+	box-shadow: 1px 1px 0 var(--ink);
 }
 
-.correctButton {
-	background: linear-gradient(135deg, #51cf66, #40c057);
-	color: white;
+.skipCircle {
+	background: var(--white);
 }
 
-.correctButton:hover {
-	background: linear-gradient(135deg, #40c057, #37b24d);
-	transform: translateY(-2px);
-	box-shadow: 0 6px 20px rgba(81, 207, 102, 0.4);
+.correctCircle {
+	background: var(--sun);
 }
 
-.actionButton:active {
-	transform: translateY(0);
-}
-
-/* Responsive design */
-@media (max-width: 600px) {
-	.cardContainer {
-		height: 350px;
-	}
-
-	.cardWord {
-		font-size: 2.5rem;
-	}
-
-	.actionButtons {
-		flex-direction: column;
-		align-items: center;
-	}
-
-	.actionButton {
-		width: 200px;
+@keyframes dealIn {
+	from {
+		transform: translateY(14px) rotate(-4deg) scale(0.96);
+		opacity: 0.4;
 	}
 }

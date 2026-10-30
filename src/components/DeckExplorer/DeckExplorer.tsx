@@ -1,9 +1,12 @@
 import { useCallback, useState } from "react";
 import type { SwipeEventData } from "react-swipeable";
 import type { GameDeckManagerState } from "../../services/GameDeckManager";
+import ui from "../../shared/styles/ui.module.css";
 import { CardComponent } from "../Card/CardComponent";
 import type { GameCard } from "../Card/GameCard";
 import { DeckSelector } from "../DeckSelector/DeckSelector";
+import { Icon } from "../Icon/Icon";
+import { Sheet } from "../Sheet/Sheet";
 import styles from "./DeckExplorer.module.css";
 
 interface DeckExplorerProps {
@@ -85,112 +88,74 @@ export function DeckExplorer({
 
 	if (cards.length === 0) {
 		return (
-			<div className={styles.overlay}>
-				<div className={styles.modal}>
-					<div className={styles.header}>
-						<h2>🎴 Deck Explorer</h2>
-						<button
-							type="button"
-							className={styles.closeButton}
-							onClick={onClose}
-						>
-							×
-						</button>
-					</div>
-					<div className={styles.content}>
-						<div className={styles.emptyState}>
-							<p>No cards available to explore.</p>
-							<p>Please select some decks first.</p>
-							<button
-								type="button"
-								className={styles.selectDecksButton}
-								onClick={() => setShowDeckSelector(true)}
-							>
-								Select Decks
-							</button>
-						</div>
-					</div>
+			<Sheet title="Preview cards" onClose={onClose}>
+				<div className={ui.emptyState}>
+					<p>No cards to preview. Pick at least one deck first.</p>
+					<button
+						type="button"
+						className={ui.accent}
+						onClick={() => setShowDeckSelector(true)}
+					>
+						Choose decks
+					</button>
 				</div>
-			</div>
+			</Sheet>
 		);
 	}
 
 	return (
-		<div className={styles.overlay}>
-			<div className={styles.modal}>
-				<div className={styles.header}>
-					<h2>🎴 Deck Explorer</h2>
-					<div className={styles.cardCounter}>
-						{currentIndex + 1} of {totalCards}
-					</div>
+		<Sheet
+			title="Preview cards"
+			onClose={onClose}
+			tall
+			footer={
+				<>
 					<button
 						type="button"
-						className={styles.closeButton}
-						onClick={onClose}
+						className={ui.secondary}
+						onClick={handlePrevious}
+						disabled={totalCards <= 1}
 					>
-						×
+						<Icon name="chevronLeft" size={20} />
+						Back
 					</button>
-				</div>
-
-				<div className={styles.content}>
-					<div className={styles.cardContainer}>
-						{currentCard && (
-							<CardComponent
-								card={currentCard}
-								onSkip={handleSkip}
-								onCorrect={handleCorrect}
-								isSwiping={isSwiping}
-								swipeDirection={swipeDirection}
-								onSwiping={handleSwiping}
-								onSwiped={handleSwiped}
-								showActionButtons={false}
-							/>
-						)}
-					</div>
-
-					<div className={styles.navigation}>
-						<button
-							type="button"
-							className={styles.navButton}
-							onClick={handlePrevious}
-							disabled={totalCards <= 1}
-						>
-							← Previous
-						</button>
-						<div className={styles.progressBar}>
-							<div
-								className={styles.progressFill}
-								style={{
-									width: `${((currentIndex + 1) / totalCards) * 100}%`,
-								}}
-							/>
-						</div>
-						<button
-							type="button"
-							className={styles.navButton}
-							onClick={handleNext}
-							disabled={totalCards <= 1}
-						>
-							Next →
-						</button>
-					</div>
-
-					<div className={styles.actions}>
-						<button
-							type="button"
-							className={styles.selectDecksButton}
-							onClick={() => setShowDeckSelector(true)}
-						>
-							📚 Change Decks
-						</button>
-					</div>
-
-					<div className={styles.instructions}>
-						<p>💡 Swipe left/right or use buttons to navigate</p>
-						<p>🎯 This is just for exploration - no scoring!</p>
-					</div>
-				</div>
+					<button
+						type="button"
+						className={ui.accent}
+						onClick={handleNext}
+						disabled={totalCards <= 1}
+					>
+						Next
+						<Icon name="chevronRight" size={20} />
+					</button>
+				</>
+			}
+		>
+			<p className={styles.counter}>
+				Card {currentIndex + 1} of {totalCards}. Swipe either way to flip
+				through; nothing is scored here.
+			</p>
+			<div className={styles.cardContainer}>
+				{currentCard && (
+					<CardComponent
+						card={currentCard}
+						onSkip={handleSkip}
+						onCorrect={handleCorrect}
+						isSwiping={isSwiping}
+						swipeDirection={swipeDirection}
+						onSwiping={handleSwiping}
+						onSwiped={handleSwiped}
+						showActionButtons={false}
+					/>
+				)}
 			</div>
-		</div>
+			<button
+				type="button"
+				className={ui.pill}
+				onClick={() => setShowDeckSelector(true)}
+			>
+				Change decks
+			</button>
+		</Sheet>
 	);
 }

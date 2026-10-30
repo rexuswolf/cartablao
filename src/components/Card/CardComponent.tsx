@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { type SwipeEventData, useSwipeable } from "react-swipeable";
+import { Icon } from "../Icon/Icon";
 import styles from "./CardComponent.module.css";
 import type { GameCard } from "./GameCard";
 
@@ -12,9 +13,11 @@ interface CardProps {
 	onSwiping: (eventData: SwipeEventData) => void;
 	onSwiped: () => void;
 	showActionButtons?: boolean;
+	label?: string;
+	cardsLeft?: number;
 }
 
-const SWIPE_TRIGGER_THRESHOLD = 150;
+export const SWIPE_TRIGGER_THRESHOLD = 110;
 
 export function CardComponent({
 	card,
@@ -25,6 +28,8 @@ export function CardComponent({
 	onSwiping,
 	onSwiped,
 	showActionButtons = true,
+	label,
+	cardsLeft,
 }: CardProps) {
 	const [swipeX, setSwipeX] = useState(0);
 	const [isAnimating, setIsAnimating] = useState(false);
@@ -57,68 +62,75 @@ export function CardComponent({
 			setTimeout(() => setIsAnimating(false), 300);
 		},
 		trackMouse: true,
+		preventScrollOnSwipe: true,
 	});
 
-	const getCardClassName = () => {
-		if (!isSwiping) return styles.card;
-		if (swipeDirection === "left")
-			return `${styles.card} ${styles.cardSwipingLeft}`;
-		if (swipeDirection === "right")
-			return `${styles.card} ${styles.cardSwipingRight}`;
-		return styles.card;
-	};
+	const showStamp = showActionButtons && isSwiping && swipeDirection;
 
 	return (
-		<div
-			className={`${styles.cardContainer} ${!showActionButtons ? styles.noActionButtons : ""}`}
-		>
-			<div
-				className={getCardClassName()}
-				style={{
-					transform: `translateX(${swipeX}px) rotate(${swipeX / 15}deg)`,
-					transition: isAnimating
-						? "transform 0.3s cubic-bezier(.23,1.12,.67,1.01)"
-						: "none",
-				}}
-				{...handlers}
-			>
-				<div className={styles.cardWord}>{card.word}</div>
-				{isSwiping && (
-					<div className={styles.swipeOverlay}>
-						{swipeDirection === "left" && (
-							<span className={`${styles.swipeText} ${styles.swipeTextSkip}`}>
-								SKIP
-							</span>
-						)}
-						{swipeDirection === "right" && (
-							<span
-								className={`${styles.swipeText} ${styles.swipeTextCorrect}`}
-							>
-								CORRECT
-							</span>
-						)}
+		<div className={styles.cardArea}>
+			<div className={styles.stack}>
+				<span className={styles.backCard} aria-hidden="true" />
+				<span className={styles.middleCard} aria-hidden="true" />
+				<div
+					key={card.id}
+					className={styles.card}
+					style={{
+						transform: `translateX(${swipeX}px) rotate(${-1.5 + swipeX / 18}deg)`,
+						transition: isAnimating
+							? "transform 0.3s cubic-bezier(.23,1.12,.67,1.01)"
+							: "none",
+					}}
+					{...handlers}
+				>
+					{(label || cardsLeft !== undefined) && (
+						<div className={styles.cardMeta}>
+							<span>{label}</span>
+							{cardsLeft !== undefined && <span>{cardsLeft} left</span>}
+						</div>
+					)}
+					<div className={styles.cardWord} aria-live="polite">
+						{card.word}
 					</div>
-				)}
+					{showActionButtons && (
+						<p className={styles.cardHint}>Swipe right if they got it</p>
+					)}
+					{showStamp && (
+						<span
+							className={
+								swipeDirection === "right"
+									? styles.stampCorrect
+									: styles.stampSkip
+							}
+							aria-hidden="true"
+						>
+							{swipeDirection === "right" ? "Got it" : "Skip"}
+						</span>
+					)}
+				</div>
 			</div>
 
 			{showActionButtons && (
 				<div className={styles.actionButtons}>
-					<button
-						type="button"
-						className={`${styles.actionButton} ${styles.skipButton}`}
-						onClick={onSkip}
-					>
-						← SKIP
+					<button type="button" className={styles.actionButton} onClick={onSkip}>
+						<span className={`${styles.actionCircle} ${styles.skipCircle}`}>
+							<Icon name="close" size={34} strokeWidth={2.8} />
+						</span>
+						Skip
 					</button>
 					<button
 						type="button"
-						className={`${styles.actionButton} ${styles.correctButton}`}
+						className={styles.actionButton}
 						onClick={onCorrect}
 					>
-						CORRECT →
+						<span className={`${styles.actionCircle} ${styles.correctCircle}`}>
+							<Icon name="check" size={38} strokeWidth={3} />
+						</span>
+						Got it
 					</button>
 				</div>
 			)}
 		</div>
 	);
 }
+

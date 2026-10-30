@@ -1,3 +1,32 @@
+/* Design tokens: "Sticker deck" */
+:root {
+	--ink: #1d1a2f;
+	--ink-soft: #4a4660;
+	--white: #ffffff;
+	--paper: #fff8e1;
+	--sun: #ffd23f;
+	--tomato: #ff5b3a;
+	--cobalt: #3355ff;
+	--mint: #2fb872;
+	--danger: #c62a1a;
+
+	--font-display: "Bowlby One", "Arial Black", Impact, sans-serif;
+	--font-body: "Outfit", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+	--border: 3px solid var(--ink);
+	--border-thin: 2.5px solid var(--ink);
+	--radius-lg: 28px;
+	--radius: 20px;
+	--radius-sm: 14px;
+	--shadow: 5px 5px 0 var(--ink);
+	--shadow-sm: 3px 3px 0 var(--ink);
+	--shadow-lg: 8px 8px 0 var(--ink);
+
+	--gutter: 20px;
+	--safe-top: env(safe-area-inset-top, 0px);
+	--safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* Reset and base styles */
 * {
 	margin: 0;
@@ -5,17 +34,60 @@
 	box-sizing: border-box;
 }
 
+html {
+	-webkit-text-size-adjust: 100%;
+}
+
 body {
-	font-family:
-		-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
-		"Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+	font-family: var(--font-body);
+	font-size: 16px;
+	line-height: 1.4;
+	color: var(--ink);
+	background: var(--sun);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-	min-height: 100vh;
+	-webkit-tap-highlight-color: transparent;
+	min-height: 100dvh;
 }
 
 #root {
 	width: 100%;
-	min-height: 100vh;
+	min-height: 100dvh;
+}
+
+button,
+input,
+select,
+textarea {
+	font: inherit;
+	color: inherit;
+}
+
+button {
+	cursor: pointer;
+	touch-action: manipulation;
+}
+
+button:disabled {
+	cursor: not-allowed;
+}
+
+:focus-visible {
+	outline: 3px solid var(--cobalt);
+	outline-offset: 3px;
+}
+
+h1,
+h2,
+h3 {
+	text-wrap: balance;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		transition-duration: 0.01ms !important;
+	}
 }

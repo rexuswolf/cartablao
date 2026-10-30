@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react';
 import type { Player, Team } from '../../Game';
 
-const TEAM_COLORS = [
-    '#ff6b6b', '#0527e2', '#51cf66', '#ffd93d', '#6c5ce7',
-    '#fd79a8', '#00b894', '#fdcb6e', '#e17055', '#74b9ff',
+export const TEAM_COLORS = [
+    '#ff5b3a', '#3355ff', '#2fb872', '#9b5cff', '#ff7ab6',
+    '#00a6a6', '#ff9f1c', '#5cc8ff', '#c2e812', '#ffd23f',
 ];
 
 
@@ -13,14 +13,15 @@ export function useTeamManager(initialTeams: Team[] = []) {
 
     const addTeam = useCallback((name: string) => {
         if (name.trim()) {
-            let newTeam: Team | null = null;
+            // Built outside the updater so the caller always gets the new team's id back
+            const newTeam: Team = {
+                id: `team-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                name: name.trim(),
+                color: TEAM_COLORS[0],
+                players: [],
+            };
             setTeams(prev => {
-                newTeam = {
-                    id: `team-${Date.now()}`,
-                    name: name.trim(),
-                    color: TEAM_COLORS[prev.length % TEAM_COLORS.length],
-                    players: [],
-                };
+                newTeam.color = TEAM_COLORS[prev.length % TEAM_COLORS.length];
                 return [...prev, newTeam];
             });
             return newTeam;

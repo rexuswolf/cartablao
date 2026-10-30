@@ -3,12 +3,11 @@ import type { GameCard } from "./components/Card/GameCard";
 import { CustomDeckCreator } from "./components/CustomDeckCreator/CustomDeckCreator";
 import { DeckSelector } from "./components/DeckSelector/DeckSelector";
 import { EndScreen } from "./components/EndScreen/EndScreen";
-import { GameConfigScreen } from "./components/GameConfig/GameConfig";
 import { GameScreen } from "./components/GameScreen/GameScreen";
+import { GameSetup } from "./components/GameSetup/GameSetup";
 import { MainLayout } from "./components/MainLayout/MainLayout";
 import { SavedDecksManager } from "./components/SavedDecksManager/SavedDecksManager";
 import { StartScreen } from "./components/StartScreen/StartScreen";
-import { TeamSetup } from "./components/TeamSetup/TeamSetup";
 import { migrateSavedDecks } from "./data/savedDecks";
 import type { GameConfig, GameState, Team } from "./Game";
 import type { Round } from "./Round";
@@ -37,23 +36,18 @@ function App() {
 	const [gameDeck, setGameDeck] = useState<GameCard[]>([]);
 
 	const startGame = useCallback(() => {
-		setGameState("config");
+		setGameState("setup");
 	}, []);
 
-	const handleConfigComplete = useCallback((config: GameConfig) => {
-		setGameConfig(config);
-		setGameState("team-setup");
-	}, []);
-
-	const handleTeamSetup = useCallback(
-		(teams: Team[]) => {
-			if (!gameConfig) return;
+	const handleSetupComplete = useCallback(
+		(config: GameConfig, teams: Team[]) => {
+			setGameConfig(config);
 			setSelectedTeams(teams);
 			// Limit the deck based on config
-			setGameDeck(deckState.mixedCards.slice(0, gameConfig.maxCards));
+			setGameDeck(deckState.mixedCards.slice(0, config.maxCards));
 			setGameState("playing");
 		},
-		[gameConfig, deckState.mixedCards],
+		[deckState.mixedCards],
 	);
 
 	const handleGameEnd = useCallback((rounds: Round[]) => {
@@ -61,17 +55,13 @@ function App() {
 		setGameState("finished");
 	}, []);
 
+	// Back to setup with the same teams, rules and decks; reshuffle for new cards
 	const handlePlayAgain = useCallback(() => {
-		setGameState("idle");
-		setGameConfig(null);
-		setSelectedTeams([]);
 		setGameRounds([]);
-		deckManager.resetToDefault();
-		setDeckState(deckManager.getState());
-		setShowDeckCreator(false);
-		setShowSavedDecks(false);
-		setShowDeckSelector(false);
 		setGameDeck([]);
+		deckManager.refreshAvailableDecks();
+		setDeckState(deckManager.getState());
+		setGameState("setup");
 	}, [deckManager]);
 
 	// Play only the deck that was just created or loaded
@@ -133,18 +123,18 @@ function App() {
 		);
 	}
 
-	if (gameState === "config") {
+	if (gameState === "setup") {
 		return (
-			<>
-				<MainLayout>
-					<GameConfigScreen
-						currentDeck={deckState.mixedCards}
-						onStartGame={handleConfigComplete}
-						onCreateCustomDeck={() => setShowDeckCreator(true)}
-						onShowSavedDecks={() => setShowSavedDecks(true)}
-						onShowDeckSelector={() => setShowDeckSelector(true)}
-					/>
-				</MainLayout>
+			<MainLayout>
+				<GameSetup
+					deckState={deckState}
+					initialConfig={gameConfig ?? undefined}
+					initialTeams={selectedTeams.length > 0 ? selectedTeams : undefined}
+					onStartGame={handleSetupComplete}
+					onCreateCustomDeck={() => setShowDeckCreator(true)}
+					onShowSavedDecks={() => setShowSavedDecks(true)}
+					onShowDeckSelector={() => setShowDeckSelector(true)}
+				/>
 				{showDeckCreator && (
 					<CustomDeckCreator
 						onDeckCreated={handleDeckCreated}
@@ -164,34 +154,24 @@ function App() {
 						onClose={handleDeckSelectorClose}
 					/>
 				)}
-			</>
-		);
-	}
-
-	if (gameState === "team-setup") {
-		return (
-			<MainLayout>
-				<TeamSetup onStartGame={handleTeamSetup} />
 			</MainLayout>
 		);
 	}
 
 	if (gameState === "playing" && gameConfig) {
 		return (
-			<MainLayout>
-				<GameScreen
-					deck={gameDeck}
-					teams={selectedTeams}
-					config={gameConfig}
-					onGameEnd={handleGameEnd}
-				/>
-			</MainLayout>
+			<GameScreen
+				deck={gameDeck}
+				teams={selectedTeams}
+				config={gameConfig}
+				onGameEnd={handleGameEnd}
+			/>
 		);
 	}
 
 	if (gameState === "finished") {
 		return (
-			<MainLayout>
+			<MainLayout background="var(--paper)">
 				<EndScreen
 					rounds={gameRounds}
 					teams={selectedTeams}

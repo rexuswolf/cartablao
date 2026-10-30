@@ -1,0 +1,30 @@
+.stepper {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 12px 14px;
+	background: var(--white);
+	border: var(--border);
+	border-radius: var(--radius);
+}
+
+.label {
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--ink-soft);
+}
+
+.controls {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 4px;
+}
+
+.value {
+	font-family: var(--font-display);
+	font-size: 24px;
+	font-variant-numeric: tabular-nums;
+	text-align: center;
+	min-width: 3ch;
+}

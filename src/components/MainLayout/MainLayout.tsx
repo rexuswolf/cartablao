@@ -2,12 +2,16 @@ import styles from "./MainLayout.module.css";
 
 interface MainLayoutProps {
 	children: React.ReactNode;
+	background?: string;
 }
 
-export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+export const MainLayout: React.FC<MainLayoutProps> = ({
+	children,
+	background,
+}) => {
 	return (
-		<div className={styles.app}>
-			<div className={styles.container}>{children}</div>
+		<div className={styles.app} style={background ? { background } : undefined}>
+			<main className={styles.container}>{children}</main>
 		</div>
 	);
 };

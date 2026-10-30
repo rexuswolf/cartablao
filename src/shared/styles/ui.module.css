@@ -1,0 +1,343 @@
+/* Shared "Sticker deck" primitives. Components compose these with their own module. */
+
+.screen {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	min-height: 100dvh;
+	padding: calc(24px + var(--safe-top)) var(--gutter) calc(20px + var(--safe-bottom));
+}
+
+.title {
+	font-family: var(--font-display);
+	font-weight: 400;
+	font-size: clamp(34px, 11vw, 46px);
+	line-height: 1.02;
+}
+
+.subtitle {
+	font-size: 17px;
+	color: var(--ink-soft);
+}
+
+.sectionTitle {
+	font-size: 17px;
+	font-weight: 700;
+}
+
+.section {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.sticker {
+	background: var(--white);
+	border: var(--border);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow);
+}
+
+/* Buttons */
+.button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 48px;
+	padding: 0 20px;
+	border: var(--border);
+	border-radius: var(--radius-sm);
+	background: var(--white);
+	color: var(--ink);
+	font-weight: 700;
+	font-size: 16px;
+	box-shadow: var(--shadow-sm);
+	transition: transform 80ms ease, box-shadow 80ms ease;
+}
+
+.button:active:not(:disabled) {
+	transform: translate(3px, 3px);
+	box-shadow: 0 0 0 var(--ink);
+}
+
+.button:disabled {
+	opacity: 0.45;
+	box-shadow: none;
+}
+
+.primary {
+	composes: button;
+	min-height: 64px;
+	border-radius: var(--radius);
+	background: var(--ink);
+	color: var(--white);
+	font-family: var(--font-display);
+	font-weight: 400;
+	font-size: 24px;
+	box-shadow: 5px 5px 0 var(--tomato);
+}
+
+.primary:active:not(:disabled) {
+	box-shadow: 0 0 0 var(--tomato);
+}
+
+.secondary {
+	composes: button;
+}
+
+.accent {
+	composes: button;
+	background: var(--sun);
+}
+
+.danger {
+	composes: button;
+	color: var(--danger);
+}
+
+.block {
+	width: 100%;
+}
+
+.pill {
+	composes: button;
+	min-height: 44px;
+	padding: 0 16px;
+	border: var(--border-thin);
+	border-radius: 999px;
+	font-size: 15px;
+	box-shadow: none;
+}
+
+.pill:active:not(:disabled) {
+	transform: scale(0.96);
+}
+
+.iconButton {
+	composes: button;
+	width: 44px;
+	min-height: 44px;
+	height: 44px;
+	padding: 0;
+	border: var(--border-thin);
+	border-radius: 50%;
+	box-shadow: none;
+	font-size: 22px;
+	flex-shrink: 0;
+}
+
+.iconButton:active:not(:disabled) {
+	transform: scale(0.92);
+}
+
+.textButton {
+	min-height: 44px;
+	padding: 0 8px;
+	border: 0;
+	background: transparent;
+	font-weight: 600;
+	font-size: 15px;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+/* Pinned to the bottom of a screen, within thumb reach */
+.bottomBar {
+	position: sticky;
+	bottom: 0;
+	z-index: 2;
+	margin: auto calc(var(--gutter) * -1) 0;
+	padding: 12px var(--gutter) calc(4px + var(--safe-bottom));
+	background: var(--bar-bg, var(--sun));
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+/* Choice chips (presets, filters, tabs) */
+.chips {
+	display: flex;
+	gap: 8px;
+	overflow-x: auto;
+	scrollbar-width: none;
+	flex-shrink: 0;
+	/* Scroll edge to edge while the first chip still lines up with the content */
+	padding: 2px var(--gutter) 6px;
+	margin: 0 calc(var(--gutter) * -1);
+}
+
+.chips::-webkit-scrollbar {
+	display: none;
+}
+
+.chip {
+	composes: pill;
+	flex-shrink: 0;
+	background: var(--white);
+}
+
+.chipSelected {
+	composes: chip;
+	background: var(--ink);
+	color: var(--white);
+}
+
+/* Form fields */
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.label {
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--ink-soft);
+}
+
+.input {
+	width: 100%;
+	min-height: 52px;
+	padding: 12px 14px;
+	border: var(--border-thin);
+	border-radius: var(--radius-sm);
+	background: var(--white);
+	font-size: 16px; /* 16px keeps iOS from zooming in */
+}
+
+.input::placeholder {
+	color: #8a86a0;
+}
+
+textarea.input {
+	min-height: 140px;
+	resize: vertical;
+	line-height: 1.45;
+}
+
+.message {
+	padding: 12px 14px;
+	border: var(--border-thin);
+	border-radius: var(--radius-sm);
+	font-size: 15px;
+	font-weight: 500;
+}
+
+.error {
+	composes: message;
+	background: #ffe3dc;
+}
+
+.success {
+	composes: message;
+	background: #d9f5e5;
+}
+
+.emptyState {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	padding: 28px 16px;
+	border: 3px dashed var(--ink);
+	border-radius: var(--radius);
+	text-align: center;
+	color: var(--ink-soft);
+}
+
+/* Bottom sheet dialogs */
+.overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 100;
+	display: flex;
+	align-items: flex-end;
+	justify-content: center;
+	background: rgba(29, 26, 47, 0.55);
+	animation: fadeIn 160ms ease-out;
+}
+
+.sheet {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	max-width: 520px;
+	max-height: 92dvh;
+	background: var(--paper);
+	border: var(--border);
+	border-bottom: 0;
+	border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+	animation: slideUp 220ms cubic-bezier(0.2, 0.9, 0.3, 1.05);
+}
+
+.sheetFull {
+	composes: sheet;
+	height: 92dvh;
+}
+
+.sheetHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 18px var(--gutter) 12px;
+}
+
+.sheetTitle {
+	font-family: var(--font-display);
+	font-weight: 400;
+	font-size: 26px;
+	line-height: 1.05;
+}
+
+.sheetBody {
+	flex: 1;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+	padding: 4px var(--gutter) 20px;
+}
+
+.sheetFooter {
+	display: flex;
+	gap: 10px;
+	padding: 12px var(--gutter) calc(16px + var(--safe-bottom));
+	border-top: var(--border-thin);
+	background: var(--paper);
+}
+
+.sheetFooter > * {
+	flex: 1;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+}
+
+@keyframes slideUp {
+	from {
+		transform: translateY(100%);
+	}
+}
+
+@media (min-width: 600px) {
+	.overlay {
+		align-items: center;
+		padding: 24px;
+	}
+
+	.sheet {
+		border-bottom: var(--border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-lg);
+	}
+
+	.sheetFull {
+		height: min(88dvh, 820px);
+	}
+}

@@ -1,94 +1,71 @@
-/* Game header */
 .gameHeader {
 	display: flex;
-	justify-content: space-between;
 	align-items: center;
-	width: 100%;
-	max-width: 600px;
-	margin-bottom: 2rem;
-	padding: 1.5rem;
-	background: rgba(255, 255, 255, 0.1);
-	border-radius: 20px;
-	backdrop-filter: blur(10px);
+	justify-content: space-between;
+	gap: 12px;
 }
 
-.timer,
-.progress {
+.turnInfo {
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	gap: 0.5rem;
+	min-width: 0;
 }
 
-.circularTimer {
-	position: relative;
+.playerName {
+	font-family: var(--font-display);
+	font-size: 26px;
+	line-height: 1.05;
+	overflow-wrap: anywhere;
+}
+
+.turnMeta {
+	font-size: 15px;
+	font-weight: 600;
+}
+
+.timer {
+	--timer-fill: var(--sun);
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-shrink: 0;
+	padding: 8px 16px 8px 8px;
+	border-radius: 999px;
+	background: var(--ink);
+	color: var(--white);
+}
+
+.timerRing {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 120px;
-	height: 120px;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
 }
 
-.timerSvg {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 120px;
-	height: 120px;
+.timerHole {
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background: var(--ink);
 }
 
-.timerBackground {
-	fill: none;
-	stroke: rgba(255, 255, 255, 0.2);
-	stroke-width: 6;
+.timerValue {
+	font-family: var(--font-display);
+	font-size: 24px;
+	min-width: 2ch;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
 }
 
-.timerProgress {
-	fill: none;
-	stroke: #4caf50;
-	stroke-linecap: round;
-	stroke-width: 6;
-	transition: stroke-dashoffset 0.3s ease;
-}
-
-.timerProgress.urgent {
-	stroke: #ff6b6b;
-	animation: pulse 1s infinite;
-}
-
-.timerText {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	z-index: 1;
-}
-
-.timerLabel,
-.progressLabel {
-	font-size: 1rem;
-	opacity: 0.8;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-	font-weight: 500;
-}
-
-.timerValue,
-.progressValue {
-	font-size: 2rem;
-	font-weight: bold;
-}
-
-.timerValue.urgent {
-	color: #ff6b6b;
-	animation: pulse 1s infinite;
+.urgent {
+	--timer-fill: var(--tomato);
+	animation: pulse 1s ease-in-out infinite;
 }
 
 @keyframes pulse {
-	0%,
-	100% {
-		opacity: 1;
-	}
 	50% {
-		opacity: 0.5;
+		transform: scale(1.06);
 	}
 }

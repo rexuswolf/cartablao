@@ -2,7 +2,10 @@ import { useState } from "react";
 import { Language } from "../../data/language";
 import type { GameDeckManagerState } from "../../services/GameDeckManager";
 import { GameDeckManager } from "../../services/GameDeckManager";
+import ui from "../../shared/styles/ui.module.css";
 import { DeckExplorer } from "../DeckExplorer/DeckExplorer";
+import { Icon } from "../Icon/Icon";
+import { Sheet } from "../Sheet/Sheet";
 import styles from "./DeckSelector.module.css";
 
 interface DeckSelectorProps {
@@ -45,16 +48,6 @@ export function DeckSelector({
 		onDeckStateChange(deckManager.getState());
 	};
 
-	const handleSelectDefaultOnly = () => {
-		deckManager.selectDefaultDeckOnly();
-		onDeckStateChange(deckManager.getState());
-	};
-
-	const handleRefresh = () => {
-		deckManager.refreshAvailableDecks();
-		onDeckStateChange(deckManager.getState());
-	};
-
 	const handleViewCards = () => {
 		setShowDeckExplorer(true);
 	};
@@ -67,15 +60,14 @@ export function DeckSelector({
 	const customDecks = deckManager.getCustomDecks();
 
 	// Filter decks by language
-	const filteredOfficialDecks =
+	const filterByLanguage = (decks: typeof officialDecks) =>
 		languageFilter === "all"
-			? officialDecks
-			: officialDecks.filter((deck) => deck.language.code === languageFilter);
-
-	const filteredCustomDecks =
-		languageFilter === "all"
-			? customDecks
-			: customDecks.filter((deck) => deck.language.code === languageFilter);
+			? decks
+			: decks.filter((deck) => deck.language.code === languageFilter);
+	const filteredOfficialDecks = filterByLanguage(officialDecks);
+	const filteredCustomDecks = filterByLanguage(customDecks);
+	const visibleDecks =
+		activeTab === "official" ? filteredOfficialDecks : filteredCustomDecks;
 
 	if (showDeckExplorer) {
 		return (
@@ -89,191 +81,102 @@ export function DeckSelector({
 	}
 
 	return (
-		<div className={styles.overlay}>
-			<div className={styles.modal}>
-				<div className={styles.header}>
-					<h2>🎴 Select Decks</h2>
+		<Sheet
+			title="Choose decks"
+			onClose={onClose}
+			tall
+			footer={
+				<button type="button" className={ui.primary} onClick={onClose}>
+					Use {currentDeckState.mixedCards.length} cards
+				</button>
+			}
+		>
+			<div className={styles.tabs} role="group" aria-label="Deck source">
+				<button
+					type="button"
+					className={activeTab === "official" ? ui.chipSelected : ui.chip}
+					aria-pressed={activeTab === "official"}
+					onClick={() => setActiveTab("official")}
+				>
+					Built-in ({filteredOfficialDecks.length})
+				</button>
+				<button
+					type="button"
+					className={activeTab === "custom" ? ui.chipSelected : ui.chip}
+					aria-pressed={activeTab === "custom"}
+					onClick={() => setActiveTab("custom")}
+				>
+					My decks ({filteredCustomDecks.length})
+				</button>
+			</div>
+
+			<div className={ui.chips} role="group" aria-label="Language">
+				<button
+					type="button"
+					className={languageFilter === "all" ? ui.chipSelected : ui.chip}
+					aria-pressed={languageFilter === "all"}
+					onClick={() => setLanguageFilter("all")}
+				>
+					All languages
+				</button>
+				{Language.getAll().map((language) => (
 					<button
+						key={language.code}
 						type="button"
-						className={styles.closeButton}
-						onClick={onClose}
+						className={
+							languageFilter === language.code ? ui.chipSelected : ui.chip
+						}
+						aria-pressed={languageFilter === language.code}
+						onClick={() => setLanguageFilter(language.code)}
 					>
-						×
+						{language.display}
 					</button>
-				</div>
+				))}
+			</div>
 
-				<div className={styles.content}>
-					<div className={styles.summary}>
-						<p>
-							<strong>{currentDeckState.selectedDecks.length}</strong> deck(s)
-							selected
-						</p>
-						<p>
-							<strong>{currentDeckState.mixedCards.length}</strong> total cards
-							available
-						</p>
-					</div>
-
-					<div className={styles.actions}>
-						<button
-							type="button"
-							className={styles.actionButton}
-							onClick={handleSelectAll}
-						>
-							Select All
-						</button>
-						<button
-							type="button"
-							className={styles.actionButton}
-							onClick={handleDeselectAll}
-						>
-							Deselect All
-						</button>
-						<button
-							type="button"
-							className={styles.actionButton}
-							onClick={handleSelectDefaultOnly}
-						>
-							Default Only
-						</button>
-						<button
-							type="button"
-							className={styles.actionButton}
-							onClick={handleRefresh}
-						>
-							Refresh
-						</button>
-						{currentDeckState.selectedDecks.length > 0 && (
+			{visibleDecks.length > 0 ? (
+				<ul className={styles.deckList}>
+					{visibleDecks.map((deck) => (
+						<li key={deck.deckId}>
 							<button
 								type="button"
-								className={styles.viewCardsButton}
-								onClick={handleViewCards}
+								className={`${styles.deckItem} ${deck.isSelected ? styles.selected : ""}`}
+								aria-pressed={deck.isSelected}
+								onClick={() => handleToggleDeck(deck.deckId)}
 							>
-								👁️ View Cards
+								<span className={styles.deckInfo}>
+									<span className={styles.deckName}>{deck.name}</span>
+									<span className={styles.deckMeta}>
+										{deck.language.display}, {deck.cardCount} cards
+									</span>
+								</span>
+								<span className={styles.check} aria-hidden="true">
+									{deck.isSelected && <Icon name="check" size={20} />}
+								</span>
 							</button>
-						)}
-					</div>
-
-					<div className={styles.languageFilter}>
-						<label htmlFor="languageFilter">Filter by Language:</label>
-
-						<select
-							id="languageFilter"
-							value={languageFilter}
-							onChange={(e) => setLanguageFilter(e.target.value)}
-							className={styles.languageSelect}
-						>
-							<option value="all">All Languages</option>
-							{Language.getAll().map((language) => (
-								<option key={language.code} value={language.code}>
-									{language.display}
-								</option>
-							))}
-						</select>
-					</div>
-
-					<div className={styles.tabs}>
-						<button
-							type="button"
-							className={`${styles.tab} ${
-								activeTab === "official" ? styles.activeTab : ""
-							}`}
-							onClick={() => setActiveTab("official")}
-						>
-							📚 Official Decks ({filteredOfficialDecks.length})
-						</button>
-						<button
-							type="button"
-							className={`${styles.tab} ${
-								activeTab === "custom" ? styles.activeTab : ""
-							}`}
-							onClick={() => setActiveTab("custom")}
-						>
-							💾 Custom Decks ({filteredCustomDecks.length})
-						</button>
-					</div>
-
-					<div className={styles.deckList}>
-						{activeTab === "official" ? (
-							filteredOfficialDecks.length > 0 ? (
-								filteredOfficialDecks.map((deck) => (
-									<button
-										key={deck.deckId}
-										type="button"
-										className={`${styles.deckItem} ${
-											deck.isSelected ? styles.selected : ""
-										}`}
-										onClick={() => handleToggleDeck(deck.deckId)}
-									>
-										<div className={styles.deckInfo}>
-											<h3>{deck.name}</h3>
-											<p className={styles.deckLanguage}>
-												{deck.language.display}
-											</p>
-											<p>{deck.cardCount} cards</p>
-										</div>
-										<div className={styles.checkbox}>
-											{deck.isSelected && <span>✓</span>}
-										</div>
-									</button>
-								))
-							) : (
-								<div className={styles.emptyState}>
-									<p>No official decks available for the selected language</p>
-								</div>
-							)
-						) : filteredCustomDecks.length > 0 ? (
-							filteredCustomDecks.map((deck) => (
-								<button
-									key={deck.deckId}
-									type="button"
-									className={`${styles.deckItem} ${
-										deck.isSelected ? styles.selected : ""
-									}`}
-									onClick={() => handleToggleDeck(deck.deckId)}
-								>
-									<div className={styles.deckInfo}>
-										<h3>{deck.name}</h3>
-										<p className={styles.deckLanguage}>
-											{deck.language.display}
-										</p>
-										<p>{deck.cardCount} cards</p>
-									</div>
-									<div className={styles.checkbox}>
-										{deck.isSelected && <span>✓</span>}
-									</div>
-								</button>
-							))
-						) : (
-							<div className={styles.emptyState}>
-								<p>No custom decks available for the selected language</p>
-								<p className={styles.emptyStateHint}>
-									Create custom decks in the Custom Deck Creator
-								</p>
-							</div>
-						)}
-					</div>
-
-					{currentDeckState.selectedDecks.length > 0 && (
-						<div className={styles.selectedSummary}>
-							<h3>Selected Decks:</h3>
-							<ul>
-								{currentDeckState.selectedDecks.map((deck) => (
-									<li key={deck.deckId}>
-										{deck.name} ({deck.cardCount} cards)
-									</li>
-								))}
-							</ul>
-						</div>
+						</li>
+					))}
+				</ul>
+			) : (
+				<div className={ui.emptyState}>
+					<p>No decks in this language yet.</p>
+					{activeTab === "custom" && (
+						<p>Make one with "Make a deck" on the setup screen.</p>
 					)}
 				</div>
+			)}
 
-				<div className={styles.footer}>
-					<button type="button" className={styles.doneButton} onClick={onClose}>
-						Done
-					</button>
-				</div>
+			<div className={styles.actions}>
+				<button type="button" className={ui.pill} onClick={handleSelectAll}>
+					Select all
+				</button>
+				<button type="button" className={ui.pill} onClick={handleDeselectAll}>
+					Clear
+				</button>
+				<button type="button" className={ui.pill} onClick={handleViewCards}>
+					Preview cards
+				</button>
 			</div>
-		</div>
+		</Sheet>
 	);
 }

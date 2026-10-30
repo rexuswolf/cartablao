@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Player, Team } from '../src/Game';
-import { useTeamManager } from '../src/shared/hooks/useTeamManager';
+import { TEAM_COLORS, useTeamManager } from '../src/shared/hooks/useTeamManager';
 
 // Mock Date.now() to have predictable IDs
 const mockDateNow = vi.fn();
@@ -63,7 +63,7 @@ describe('useTeamManager', () => {
 
             expect(result.current.teams).toHaveLength(1);
             expect(result.current.teams[0].name).toBe('New Team');
-            expect(result.current.teams[0].color).toBe('#ff6b6b'); // First color
+            expect(result.current.teams[0].color).toBe(TEAM_COLORS[0]); // First color
             expect(result.current.hasTeams).toBe(true);
         });
 
@@ -356,12 +356,9 @@ describe('useTeamManager', () => {
 
 
             // Colors are assigned based on the current teams.length before adding
-            // Team 1: teams.length = 0, color = TEAM_COLORS[0] = '#ff6b6b'
-            // Team 2: teams.length = 1, color = TEAM_COLORS[1] = '#0527e2'  
-            // Team 3: teams.length = 2, color = TEAM_COLORS[2] = '#51cf66'
-            expect(result.current.teams[0].color).toBe('#ff6b6b'); // First color
-            expect(result.current.teams[1].color).toBe('#0527e2'); // Second color
-            expect(result.current.teams[2].color).toBe('#51cf66'); // Third color
+            expect(result.current.teams[0].color).toBe(TEAM_COLORS[0]); // First color
+            expect(result.current.teams[1].color).toBe(TEAM_COLORS[1]); // Second color
+            expect(result.current.teams[2].color).toBe(TEAM_COLORS[2]); // Third color
         });
 
         it('should cycle through colors when more teams than colors', () => {
@@ -374,7 +371,7 @@ describe('useTeamManager', () => {
                 }
             });
 
-            expect(result.current.teams[10].color).toBe('#ff6b6b'); // Should cycle back
+            expect(result.current.teams[10].color).toBe(TEAM_COLORS[0]); // Should cycle back
         });
     });
 

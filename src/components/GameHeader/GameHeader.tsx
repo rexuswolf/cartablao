@@ -1,72 +1,49 @@
 import styles from "./GameHeader.module.css";
 
 interface GameHeaderProps {
+	playerName: string;
+	teamName: string;
+	roundNumber: number;
+	totalRounds: number;
 	timeLeft: number;
-	cardsLeftToGuess: number;
-	totalCards: number;
-	maxTime?: number;
+	maxTime: number;
 }
 
 export function GameHeader({
+	playerName,
+	teamName,
+	roundNumber,
+	totalRounds,
 	timeLeft,
-	cardsLeftToGuess,
-	totalCards,
-	maxTime = 60,
+	maxTime,
 }: GameHeaderProps) {
-	const formatTime = (seconds: number) => {
-		const mins = Math.floor(seconds / 60);
-		const secs = seconds % 60;
-		return `${mins}:${secs.toString().padStart(2, "0")}`;
-	};
-
-	// Calculate progress percentage for the circle
-	const progressPercentage = ((maxTime - timeLeft) / maxTime) * 100;
-	const radius = 50;
-	const circumference = 2 * Math.PI * radius;
-	const strokeDasharray = circumference;
-	const strokeDashoffset =
-		circumference - (progressPercentage / 100) * circumference;
+	const remaining = maxTime > 0 ? (timeLeft / maxTime) * 100 : 0;
+	const isUrgent = timeLeft <= 10;
 
 	return (
-		<div className={styles.gameHeader}>
-			<div className={styles.timer}>
-				<div className={styles.circularTimer}>
-					<svg className={styles.timerSvg} width="120" height="120">
-						<title>Timer</title>
-						<circle
-							className={styles.timerBackground}
-							cx="60"
-							cy="60"
-							r={radius}
-							strokeWidth="6"
-						/>
-						<circle
-							className={`${styles.timerProgress} ${timeLeft <= 10 ? styles.urgent : ""}`}
-							cx="60"
-							cy="60"
-							r={radius}
-							strokeWidth="6"
-							strokeDasharray={strokeDasharray}
-							strokeDashoffset={strokeDashoffset}
-							transform="rotate(-90 60 60)"
-						/>
-					</svg>
-					<div className={styles.timerText}>
-						<span className={styles.timerLabel}>Time</span>
-						<span
-							className={`${styles.timerValue} ${timeLeft <= 10 ? styles.urgent : ""}`}
-						>
-							{formatTime(timeLeft)}
-						</span>
-					</div>
-				</div>
-			</div>
-			<div className={styles.progress}>
-				<span className={styles.progressLabel}>Cards Left:</span>
-				<span className={styles.progressValue}>
-					{cardsLeftToGuess} / {totalCards}
+		<header className={styles.gameHeader}>
+			<div className={styles.turnInfo}>
+				<span className={styles.playerName}>{playerName}'s turn</span>
+				<span className={styles.turnMeta}>
+					{teamName}, round {roundNumber} of {totalRounds}
 				</span>
 			</div>
-		</div>
+			<div
+				role="timer"
+				aria-label={`${timeLeft} seconds left`}
+				className={`${styles.timer} ${isUrgent ? styles.urgent : ""}`}
+			>
+				<span
+					className={styles.timerRing}
+					style={{
+						background: `conic-gradient(var(--timer-fill) 0 ${remaining}%, #3a3654 ${remaining}% 100%)`,
+					}}
+					aria-hidden="true"
+				>
+					<span className={styles.timerHole} />
+				</span>
+				<span className={styles.timerValue}>{timeLeft}</span>
+			</div>
+		</header>
 	);
 }

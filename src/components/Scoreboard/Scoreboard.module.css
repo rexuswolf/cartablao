@@ -1,0 +1,113 @@
+.scoreboard {
+	gap: 24px;
+}
+
+.header {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 10px;
+}
+
+.badge {
+	padding: 6px 12px;
+	border-radius: 999px;
+	background: var(--ink);
+	color: var(--white);
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.teamList {
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.teamRow {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.teamLabel {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.teamName {
+	font-size: 17px;
+	font-weight: 700;
+}
+
+.skipped {
+	font-size: 14px;
+	color: var(--ink-soft);
+}
+
+.track {
+	display: flex;
+	height: 56px;
+	border: var(--border);
+	border-radius: 16px;
+	background: var(--white);
+	overflow: hidden;
+}
+
+.bar {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	padding-right: 12px;
+	border-right: var(--border);
+	animation: grow 600ms cubic-bezier(0.2, 0.9, 0.3, 1.05) both;
+	transform-origin: left;
+}
+
+.score {
+	font-family: var(--font-display);
+	font-size: 26px;
+	font-variant-numeric: tabular-nums;
+}
+
+.playerChips {
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.playerChip {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 40px;
+	padding: 0 14px 0 6px;
+	border: var(--border-thin);
+	border-radius: 999px;
+	background: var(--white);
+	font-size: 15px;
+	font-weight: 600;
+}
+
+.playerScore {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 28px;
+	height: 28px;
+	padding: 0 4px;
+	border: 2px solid var(--ink);
+	border-radius: 999px;
+	font-size: 14px;
+	font-weight: 700;
+}
+
+@keyframes grow {
+	from {
+		transform: scaleX(0.1);
+	}
+}

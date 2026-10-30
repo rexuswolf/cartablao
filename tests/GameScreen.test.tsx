@@ -49,13 +49,13 @@ describe('GameScreen', () => {
         const onGameEnd = vi.fn();
         render(<GameScreen deck={deck} teams={teams} config={config} onGameEnd={onGameEnd} />);
 
-        fireEvent.click(screen.getByText('CORRECT →'));
-        fireEvent.click(screen.getByText('CORRECT →'));
-        expect(screen.getByText(/Round 1 Complete/)).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+        expect(screen.getByText('Round 1 of 2 done')).toBeTruthy();
 
-        fireEvent.click(screen.getByText('Next Round'));
+        fireEvent.click(screen.getByText('Start round 2'));
 
-        expect(screen.queryByText('No more cards!')).toBeNull();
+        expect(screen.queryByText('No more cards')).toBeNull();
         expect(shownWord()).not.toBeNull();
         expect(onGameEnd).not.toHaveBeenCalled();
     });
@@ -64,29 +64,29 @@ describe('GameScreen', () => {
         const onGameEnd = vi.fn();
         render(<GameScreen deck={deck} teams={teams} config={config} onGameEnd={onGameEnd} />);
 
-        fireEvent.click(screen.getByText('CORRECT →'));
-        fireEvent.click(screen.getByText('CORRECT →'));
-        fireEvent.click(screen.getByText('Next Round'));
-        fireEvent.click(screen.getByText('CORRECT →'));
-        fireEvent.click(screen.getByText('CORRECT →'));
+        fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+        fireEvent.click(screen.getByText('Start round 2'));
+        fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
 
         expect(onGameEnd).toHaveBeenCalledTimes(1);
     });
 
     it('moves to the next player with a running timer after all cards are skipped', () => {
         render(<GameScreen deck={deck} teams={teams} config={config} onGameEnd={vi.fn()} />);
-        expect(screen.getByText('Alice')).toBeTruthy();
+        expect(screen.getByText("Alice's turn")).toBeTruthy();
 
-        fireEvent.click(screen.getByText('← SKIP'));
-        fireEvent.click(screen.getByText('← SKIP'));
+        fireEvent.click(screen.getByRole('button', { name: 'Skip' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Skip' }));
 
-        expect(screen.getByText('Bob')).toBeTruthy();
+        expect(screen.getByText("Bob's turn")).toBeTruthy();
         expect(shownWord()).not.toBeNull();
 
         act(() => {
             vi.advanceTimersByTime(3000);
         });
-        expect(screen.getByText('0:27')).toBeTruthy();
+        expect(screen.getByRole('timer', { name: '27 seconds left' })).toBeTruthy();
     });
 
     it('passes the turn exactly once and shows the real next card when time runs out', () => {
@@ -98,8 +98,8 @@ describe('GameScreen', () => {
         });
 
         // Next player (not skipped past), fresh timer, and the card left on screen went to the back
-        expect(screen.getByText('Bob')).toBeTruthy();
-        expect(screen.getByText('0:30')).toBeTruthy();
+        expect(screen.getByText("Bob's turn")).toBeTruthy();
+        expect(screen.getByRole('timer', { name: '30 seconds left' })).toBeTruthy();
         expect(shownWord()).not.toBe(firstWord);
     });
 });

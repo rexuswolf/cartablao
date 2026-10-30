@@ -3,11 +3,13 @@ import type { SwipeEventData } from "react-swipeable";
 import type { GameConfig, Team } from "../../Game";
 import { Game } from "../../Game";
 import type { Round } from "../../Round";
-import { CardComponent } from "../Card/CardComponent";
+import { getReadableTextColor } from "../../shared/libs/color";
+import ui from "../../shared/styles/ui.module.css";
+import { CardComponent, SWIPE_TRIGGER_THRESHOLD } from "../Card/CardComponent";
 import type { GameCard } from "../Card/GameCard";
 import { GameHeader } from "../GameHeader/GameHeader";
+import { MainLayout } from "../MainLayout/MainLayout";
 import { NoCards } from "../NoCards/NoCards";
-import { PlayerTurn } from "../PlayerTurn/PlayerTurn";
 import { RoundComplete } from "../RoundComplete/RoundComplete";
 import styles from "./GameScreen.module.css";
 
@@ -122,9 +124,9 @@ export function GameScreen({
 		(eventData: SwipeEventData) => {
 			if (turnState === "playing") {
 				setIsSwiping(true);
-				if (eventData.deltaX < -150) {
+				if (eventData.deltaX < -SWIPE_TRIGGER_THRESHOLD) {
 					setSwipeDirection("left");
-				} else if (eventData.deltaX > 150) {
+				} else if (eventData.deltaX > SWIPE_TRIGGER_THRESHOLD) {
 					setSwipeDirection("right");
 				} else {
 					setSwipeDirection(null);
@@ -170,90 +172,91 @@ export function GameScreen({
 	}, [timeLeft, game]);
 
 	const totalRounds = game.getTotalRounds();
+	const currentTeam = teams.find((team) => team.id === currentPlayer?.teamId);
+	const teamColor = currentTeam?.color ?? "#ffd23f";
+	const textColor = getReadableTextColor(teamColor);
 
 	// Show round complete screen if round is finished
 	if (showRoundComplete) {
 		return (
-			<RoundComplete
-				rounds={game.getRounds()}
-				teams={teams}
-				currentRoundNumber={game.getCurrentRoundNumber()}
-				totalRounds={totalRounds}
-				onNextRound={handleNextRound}
-			/>
+			<MainLayout background="var(--paper)">
+				<RoundComplete
+					rounds={game.getRounds()}
+					teams={teams}
+					currentRoundNumber={game.getCurrentRoundNumber()}
+					totalRounds={totalRounds}
+					onNextRound={handleNextRound}
+				/>
+			</MainLayout>
 		);
 	}
 
 	return (
-		<>
-			<GameHeader
-				timeLeft={timeLeft}
-				cardsLeftToGuess={game.getCurrentRoundRemainingCards()}
-				totalCards={game.getTotalCards()}
-				maxTime={config.secondsPerRound}
-			/>
-
-			{currentPlayer && (
-				<PlayerTurn
-					currentPlayer={currentPlayer}
-					teams={teams}
-					roundNumber={game.getCurrentRoundNumber()}
-					totalRounds={totalRounds}
-					turnState={turnState}
-					onStartTurn={handleStartTurn}
-				/>
-			)}
-
-			{turnState === "preparing" ? (
-				<div className={styles.preparationScreen}>
-					<div className={styles.preparationCard}>
-						<h2>Get Ready!</h2>
-						<p>
-							It's your turn, <strong>{currentPlayer?.name}</strong>!
-						</p>
-						<div className={styles.preparationInstructions}>
-							<p>• Take a moment to prepare</p>
-							<p>• Think about your acting strategy</p>
-							<p>• Click "Start Turn" when ready</p>
+		<MainLayout background={teamColor}>
+			<div
+				className={`${ui.screen} ${styles.gameScreen}`}
+				style={{ color: textColor }}
+			>
+				{turnState === "preparing" ? (
+					<div className={styles.preparation}>
+						<div className={styles.preparationText}>
+							<p className={styles.preparationLead}>Pass the phone to</p>
+							<h1 className={styles.preparationName}>{currentPlayer?.name}</h1>
+							<p className={styles.preparationMeta}>
+								{currentTeam?.name}, round {game.getCurrentRoundNumber()} of{" "}
+								{totalRounds}
+							</p>
 						</div>
-						<button
-							type="button"
-							className={styles.startTurnButton}
-							onClick={handleStartTurn}
-						>
-							Start Turn
-						</button>
-					</div>
-				</div>
-			) : (
-				<>
-					{currentCard ? (
-						<CardComponent
-							card={currentCard}
-							onSkip={handleSkip}
-							onCorrect={handleCorrect}
-							isSwiping={isSwiping}
-							swipeDirection={swipeDirection}
-							onSwiping={handleSwiping}
-							onSwiped={handleSwiped}
-						/>
-					) : (
-						<NoCards />
-					)}
-
-					{turnState === "playing" && (
-						<div className={styles.endTurnContainer}>
+						<p className={styles.preparationTip}>
+							Only {currentPlayer?.name} should see the screen. Act out each
+							card without saying the word.
+						</p>
+						<div className={styles.bottomActions}>
 							<button
 								type="button"
-								className={styles.endTurnButton}
-								onClick={handleEndTurn}
+								className={ui.primary}
+								onClick={handleStartTurn}
 							>
-								End Turn Early
+								Start turn
 							</button>
 						</div>
-					)}
-				</>
-			)}
-		</>
+					</div>
+				) : (
+					<>
+						<GameHeader
+							playerName={currentPlayer?.name ?? ""}
+							teamName={currentTeam?.name ?? ""}
+							roundNumber={game.getCurrentRoundNumber()}
+							totalRounds={totalRounds}
+							timeLeft={timeLeft}
+							maxTime={config.secondsPerRound}
+						/>
+
+						{currentCard ? (
+							<CardComponent
+								card={currentCard}
+								onSkip={handleSkip}
+								onCorrect={handleCorrect}
+								isSwiping={isSwiping}
+								swipeDirection={swipeDirection}
+								onSwiping={handleSwiping}
+								onSwiped={handleSwiped}
+								cardsLeft={game.getCurrentRoundRemainingCards()}
+							/>
+						) : (
+							<NoCards />
+						)}
+
+						<button
+							type="button"
+							className={`${ui.textButton} ${styles.endTurn}`}
+							onClick={handleEndTurn}
+						>
+							End turn early
+						</button>
+					</>
+				)}
+			</div>
+		</MainLayout>
 	);
 }
