@@ -6,6 +6,7 @@ describe('deck card helpers', () => {
     it('splits a leading emoji off the deck name', () => {
         expect(splitDeckName('🌟 Famous People')).toEqual({ symbol: '🌟', title: 'Famous People' });
         expect(splitDeckName('▶️ Famous YouTubers')).toEqual({ symbol: '▶️', title: 'Famous YouTubers' });
+        expect(splitDeckName('🇪🇸 Cine y series de España')).toEqual({ symbol: '🇪🇸', title: 'Cine y series de España' });
     });
 
     it('keeps names without an emoji as they are', () => {

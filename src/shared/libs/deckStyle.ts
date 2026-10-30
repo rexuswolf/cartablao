@@ -15,7 +15,8 @@ export function getDeckColor(deckId: string): string {
 
 // Splits a leading emoji (e.g. "🌟 Famous People") off a deck name to use as the card's symbol
 export function splitDeckName(name: string): { symbol: string | null; title: string } {
-    const match = name.match(/^(\p{Extended_Pictographic}[️‍\p{Extended_Pictographic}]*)\s*/u);
+    // Flags are pairs of regional indicator letters, not pictographs
+    const match = name.match(/^(\p{Regional_Indicator}{2}|\p{Extended_Pictographic}[\uFE0F\u200D\p{Extended_Pictographic}]*)\s*/u);
     if (!match) return { symbol: null, title: name };
     return { symbol: match[1], title: name.slice(match[0].length) || name };
 }

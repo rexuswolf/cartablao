@@ -77,7 +77,6 @@ export const FAMOUS_PEOPLE_DECK = new Deck({
         "Keanu Reeves",
         "Tom Hanks",
         "Meryl Streep",
-        "Denzel Washington",
         "Brad Pitt",
         "Angelina Jolie",
         "Tom Cruise",

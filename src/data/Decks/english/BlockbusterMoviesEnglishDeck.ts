@@ -40,7 +40,6 @@ export const BLOCKBUSTER_MOVIES_ENGLISH = new Deck({
         "Jurassic World",
         "Star Trek",
         "Twilight",
-        "Frozen",
         "Doctor Strange",
         "The Incredibles",
         "Coco",

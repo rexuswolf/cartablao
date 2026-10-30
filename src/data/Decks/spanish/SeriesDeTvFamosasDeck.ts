@@ -24,7 +24,6 @@ export const SERIES_FAMOSAS_SPANISH_DECK = new Deck({
         "Perdidos",
         "Westworld",
         "Arcane",
-        "Perdidos",
         "Separación",
 
         // Drama

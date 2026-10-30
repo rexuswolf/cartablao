@@ -14,6 +14,19 @@ import { FAMOUS_VIDEOGAME_CHARACTERS_DECK } from "./Decks/universal/FamousVideog
 import { FAMOUS_VIDEOGAMES_DECK } from "./Decks/universal/FamousVideogamesDeck";
 import { FAMOUS_YOUTUBERS_DECK } from "./Decks/universal/FamousYoutubersDeck";
 import { POPULAR_SONGS_DECK } from "./Decks/universal/PopularSongsDeck";
+import { PERSONAJES_DE_CINE_DECK } from "./Decks/spanish/PersonajesDeCineDeck";
+import { PERSONAJES_DE_SERIES_DECK } from "./Decks/spanish/PersonajesDeSeriesDeck";
+import { CINE_Y_SERIES_DE_ESPANA_DECK } from "./Decks/spanish/CineYSeriesDeEspanaDeck";
+import { CINE_DE_TERROR_DECK } from "./Decks/spanish/CineDeTerrorDeck";
+import { DISNEY_Y_PIXAR_DECK } from "./Decks/spanish/DisneyYPixarDeck";
+import { SAGAS_EPICAS_DECK } from "./Decks/spanish/SagasEpicasDeck";
+import { ANIME_DECK } from "./Decks/spanish/AnimeDeck";
+import { COMIDA_Y_BEBIDA_DECK } from "./Decks/spanish/ComidaYBebidaDeck";
+import { PROFESIONES_DECK } from "./Decks/spanish/ProfesionesDeck";
+import { MONUMENTOS_Y_LUGARES_DECK } from "./Decks/spanish/MonumentosYLugaresDeck";
+import { INTERNET_Y_REDES_DECK } from "./Decks/spanish/InternetYRedesDeck";
+import { EXITOS_PARA_CANTAR_DECK } from "./Decks/spanish/ExitosParaCantarDeck";
+import { TAYLOR_SWIFT_DECK } from "./Decks/universal/TaylorSwiftDeck";
 
 // Deck Library - Multiple themed decks
 export const DECK_LIBRARY = {
@@ -38,6 +51,19 @@ export const DECK_LIBRARY = {
     "series-famosas-spanish": SERIES_FAMOSAS_SPANISH_DECK,
     "marvel-characters-spanish": MARVEL_CHARACTERS_SPANISH_DECK,
     "blockbuster-movies-spanish": BLOCKBUSTER_MOVIES_SPANISH,
+    "personajes-de-cine": PERSONAJES_DE_CINE_DECK,
+    "personajes-de-series": PERSONAJES_DE_SERIES_DECK,
+    "cine-y-series-de-espana": CINE_Y_SERIES_DE_ESPANA_DECK,
+    "cine-de-terror": CINE_DE_TERROR_DECK,
+    "disney-y-pixar": DISNEY_Y_PIXAR_DECK,
+    "sagas-epicas": SAGAS_EPICAS_DECK,
+    "anime": ANIME_DECK,
+    "comida-y-bebida": COMIDA_Y_BEBIDA_DECK,
+    "profesiones": PROFESIONES_DECK,
+    "monumentos-y-lugares": MONUMENTOS_Y_LUGARES_DECK,
+    "internet-y-redes": INTERNET_Y_REDES_DECK,
+    "exitos-para-cantar": EXITOS_PARA_CANTAR_DECK,
+    "taylor-swift": TAYLOR_SWIFT_DECK,
 };
 
 // Helper function to get all available decks

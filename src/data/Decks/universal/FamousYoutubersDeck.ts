@@ -30,6 +30,24 @@ export const FAMOUS_YOUTUBERS_DECK = new Deck({
         "Fernanfloo",           // Uno de los más queridos, gaming
         "HolaSoyGerman",        // Legendario, top histórico
         "DrossRotzank",         // Misterio, terror, storytelling
-        "Yuya"                  // Belleza, pionera del contenido femenino
+        "Yuya",                  // Belleza, pionera del contenido femenino
+        "Willyrex",
+        "DjMaRiiO",
+        "Mikecrack",
+        "Spreen",
+        "Lolito Fernández",
+        "Mangel",
+        "Jaime Altozano",
+        "Ninja",
+        "iShowSpeed",
+        "Kai Cenat",
+        "KSI",
+        "Sidemen",
+        "Smosh",
+        "NikkieTutorials",
+        "Ali-A",
+        "Ryan's World",
+        "xQc",
+        "Juan Guarnizo",
     ]
 });

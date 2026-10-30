@@ -39,7 +39,6 @@ export const POPULAR_SONGS_DECK = new Deck({
         "Thriller – Michael Jackson",
         "Perfect – Ed Sheeran",
         "Dance Monkey – Tones and I",
-        "Shape of You – Ed Sheeran",
         "Let Her Go – Passenger",
         "Chandelier – Sia",
         "Stayin’ Alive – Bee Gees",
