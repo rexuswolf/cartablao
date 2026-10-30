@@ -111,3 +111,7 @@
 		transform: scaleX(0.1);
 	}
 }
+
+.secondary {
+	align-self: center;
+}

@@ -8,6 +8,7 @@ interface RoundCompleteProps {
 	currentRoundNumber: number;
 	totalRounds: number;
 	onNextRound: () => void;
+	onEndGame: () => void;
 }
 
 export function RoundComplete({
@@ -16,6 +17,7 @@ export function RoundComplete({
 	currentRoundNumber,
 	totalRounds,
 	onNextRound,
+	onEndGame,
 }: RoundCompleteProps) {
 	return (
 		<Scoreboard
@@ -25,6 +27,8 @@ export function RoundComplete({
 			isFinal={false}
 			actionLabel={`Start round ${currentRoundNumber + 1}`}
 			onAction={onNextRound}
+			secondaryLabel="End game"
+			onSecondary={onEndGame}
 		/>
 	);
 }

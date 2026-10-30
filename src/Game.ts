@@ -205,9 +205,34 @@ export class Game {
         currentRound.addTurn({ ...this.currentTurn });
 
         this.turnIndex++;
+        // The next turn starts explicitly (startNewTurn) so the finished one can be reviewed first
+        this.currentTurn = null;
+    }
 
-        if (!currentRound.isFinished()) {
-            this.startNewTurn();
+    // The most recently finished turn of the current round
+    getLastTurn(): Turn | null {
+        return this.getCurrentRound()?.getLastTurn() ?? null;
+    }
+
+    // Fixes a misjudged card from the last turn, moving it between correct and skipped
+    setLastTurnCardResult(cardId: number, isCorrect: boolean): void {
+        const currentRound = this.getCurrentRound();
+        const turn = currentRound?.getLastTurn();
+        if (!currentRound || !turn) return;
+
+        const from = isCorrect ? turn.skippedCards : turn.correctCards;
+        const card = from.find(c => c.id === cardId);
+        if (!card) return;
+
+        if (isCorrect) {
+            turn.skippedCards = turn.skippedCards.filter(c => c.id !== cardId);
+            turn.correctCards = [...turn.correctCards, card];
+            // A guessed card no longer needs to be played this round
+            currentRound.removeCard(cardId);
+        } else {
+            turn.correctCards = turn.correctCards.filter(c => c.id !== cardId);
+            turn.skippedCards = [...turn.skippedCards, card];
+            currentRound.pushCardToEnd(card);
         }
     }
 

@@ -13,6 +13,7 @@ import type { GameConfig, GameState, Team } from "./Game";
 import type { Round } from "./Round";
 import type { GameDeckManagerState } from "./services/GameDeckManager";
 import { GameDeckManager } from "./services/GameDeckManager";
+import { useBackHandler } from "./shared/hooks/useBackHandler";
 
 function App() {
 	// Initialize deck manager
@@ -114,6 +115,10 @@ function App() {
 		},
 		[],
 	);
+
+	// The phone's back gesture steps back through the app instead of leaving it
+	useBackHandler(gameState === "setup", () => setGameState("idle"));
+	useBackHandler(gameState === "finished", handlePlayAgain);
 
 	if (gameState === "idle") {
 		return (

@@ -12,6 +12,8 @@ interface ScoreboardProps {
 	isFinal: boolean;
 	actionLabel: string;
 	onAction: () => void;
+	secondaryLabel?: string;
+	onSecondary?: () => void;
 }
 
 export function Scoreboard({
@@ -21,6 +23,8 @@ export function Scoreboard({
 	isFinal,
 	actionLabel,
 	onAction,
+	secondaryLabel,
+	onSecondary,
 }: ScoreboardProps) {
 	const { teamResults, playerResults, leaderScore } = getGameResults(
 		rounds,
@@ -99,6 +103,15 @@ export function Scoreboard({
 				<button type="button" className={ui.primary} onClick={onAction}>
 					{actionLabel}
 				</button>
+				{secondaryLabel && onSecondary && (
+					<button
+						type="button"
+						className={`${ui.textButton} ${styles.secondary}`}
+						onClick={onSecondary}
+					>
+						{secondaryLabel}
+					</button>
+				)}
 			</div>
 		</div>
 	);

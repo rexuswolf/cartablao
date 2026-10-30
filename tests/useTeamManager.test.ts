@@ -343,6 +343,44 @@ describe('useTeamManager', () => {
         });
     });
 
+    describe('setTeamCount', () => {
+        it('adds empty teams with unused colors', () => {
+            const { result } = renderHook(() => useTeamManager(mockTeams));
+
+            act(() => {
+                result.current.setTeamCount(4);
+            });
+
+            expect(result.current.teams).toHaveLength(4);
+            expect(result.current.teams[2].players).toEqual([]);
+            const colors = result.current.teams.map(team => team.color);
+            expect(new Set(colors).size).toBe(4);
+            expect(result.current.totalPlayers).toBe(3);
+        });
+
+        it('moves players from removed teams onto the smallest remaining teams', () => {
+            const { result } = renderHook(() => useTeamManager(mockTeams));
+
+            act(() => {
+                result.current.setTeamCount(1);
+            });
+
+            expect(result.current.teams).toHaveLength(1);
+            expect(result.current.totalPlayers).toBe(3);
+            expect(result.current.teams[0].players.every(player => player.teamId === 'team1')).toBe(true);
+        });
+
+        it('ignores counts below one', () => {
+            const { result } = renderHook(() => useTeamManager(mockTeams));
+
+            act(() => {
+                result.current.setTeamCount(0);
+            });
+
+            expect(result.current.teams).toHaveLength(2);
+        });
+    });
+
     describe('Color Assignment', () => {
         it('should assign colors in rotation', () => {
             const { result } = renderHook(() => useTeamManager());

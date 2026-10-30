@@ -8,6 +8,7 @@ import { useTeamManager } from "../../shared/hooks/useTeamManager";
 import ui from "../../shared/styles/ui.module.css";
 import { Icon } from "../Icon/Icon";
 import { Stepper } from "../Stepper/Stepper";
+import { PlayerSheet } from "./components/PlayerSheet";
 import { TeamSheet } from "./components/TeamSheet";
 import styles from "./GameSetup.module.css";
 
@@ -42,17 +43,25 @@ export function GameSetup({
 	} = useGameConfig(initialConfig);
 	const {
 		teams,
-		addTeam,
-		removeTeam,
+		setTeamCount,
 		updateTeam,
 		addPlayer,
 		removePlayer,
+		movePlayer,
 		balanceTeams,
 		totalPlayers,
 	} = useTeamManager(initialTeams ?? SAMPLE_TEAMS);
 	const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
+	const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
+	const [newPlayerName, setNewPlayerName] = useState("");
 
 	const editingTeam = teams.find((team) => team.id === editingTeamId);
+	const allPlayers = teams.flatMap((team) =>
+		team.players.map((player) => ({ player, team })),
+	);
+	const editingPlayer = allPlayers.find(
+		({ player }) => player.id === editingPlayerId,
+	);
 	const teamsWithPlayers = teams.filter((team) => team.players.length > 0);
 	const totalCards = deckState.mixedCards.length;
 	const cardsInPlay = Math.min(config.maxCards, totalCards);
@@ -62,9 +71,16 @@ export function GameSetup({
 			: `${deckState.selectedDecks.length} decks mixed`;
 	const canStart = isValid && teamsWithPlayers.length > 0 && totalCards > 0;
 
-	const handleAddTeam = () => {
-		const team = addTeam(`Team ${teams.length + 1}`);
-		if (team) setEditingTeamId(team.id);
+	// New players join the smallest team; shuffle or move them afterwards
+	const handleAddPlayer = (event: React.FormEvent) => {
+		event.preventDefault();
+		const name = newPlayerName.trim();
+		if (!name || teams.length === 0) return;
+		const smallestTeam = teams.reduce((a, b) =>
+			b.players.length < a.players.length ? b : a,
+		);
+		addPlayer(smallestTeam.id, name);
+		setNewPlayerName("");
 	};
 
 	const handleStart = () => {
@@ -109,18 +125,78 @@ export function GameSetup({
 				</div>
 			</section>
 
+			<section className={ui.section} aria-labelledby="players-heading">
+				<div className={styles.sectionHeader}>
+					<h2 id="players-heading" className={ui.sectionTitle}>
+						Players
+					</h2>
+					<span className={styles.deckMeta}>{totalPlayers} added</span>
+				</div>
+				<form className={styles.addPlayerForm} onSubmit={handleAddPlayer}>
+					<input
+						className={ui.input}
+						placeholder="Add a player"
+						aria-label="Player name"
+						value={newPlayerName}
+						onChange={(event) => setNewPlayerName(event.target.value)}
+						enterKeyHint="enter"
+						autoCapitalize="words"
+					/>
+					<button
+						type="submit"
+						className={ui.accent}
+						disabled={!newPlayerName.trim()}
+					>
+						Add
+					</button>
+				</form>
+				{allPlayers.length > 0 ? (
+					<ul className={styles.playerChips}>
+						{allPlayers.map(({ player, team }) => (
+							<li key={player.id}>
+								<button
+									type="button"
+									className={styles.playerChip}
+									aria-label={`${player.name}, ${team.name}. Change team or remove`}
+									onClick={() => setEditingPlayerId(player.id)}
+								>
+									<span
+										className={styles.teamDot}
+										style={{ background: team.color }}
+										aria-hidden="true"
+									/>
+									{player.name}
+								</button>
+							</li>
+						))}
+					</ul>
+				) : (
+					<p className={styles.deckMeta}>Add everyone who's playing.</p>
+				)}
+			</section>
+
 			<section className={ui.section} aria-labelledby="teams-heading">
 				<div className={styles.sectionHeader}>
 					<h2 id="teams-heading" className={ui.sectionTitle}>
 						Teams
 					</h2>
-					{teams.length > 1 && totalPlayers > 1 && (
-						<button type="button" className={ui.pill} onClick={balanceTeams}>
-							<Icon name="shuffle" size={18} />
-							Shuffle players
-						</button>
-					)}
+					<button
+						type="button"
+						className={ui.pill}
+						onClick={balanceTeams}
+						disabled={totalPlayers < 2}
+					>
+						<Icon name="shuffle" size={18} />
+						Shuffle into teams
+					</button>
 				</div>
+				<Stepper
+					label="Number of teams"
+					value={teams.length}
+					min={1}
+					max={10}
+					onChange={setTeamCount}
+				/>
 				<div className={styles.teamGrid}>
 					{teams.map((team, index) => (
 						<button
@@ -133,25 +209,20 @@ export function GameSetup({
 								rotate: TILTS[index % TILTS.length],
 							}}
 							onClick={() => setEditingTeamId(team.id)}
-							aria-label={`Edit ${team.name}, ${team.players.length} players`}
+							aria-label={`Rename ${team.name}`}
 						>
 							<span className={styles.teamName}>{team.name}</span>
 							<span className={styles.teamPlayers}>
 								{team.players.length > 0
 									? team.players.map((player) => player.name).join(", ")
-									: "Tap to add players"}
+									: "No players yet"}
 							</span>
 						</button>
 					))}
-					<button
-						type="button"
-						className={styles.addTeam}
-						onClick={handleAddTeam}
-					>
-						<Icon name="plus" size={26} />
-						Add team
-					</button>
 				</div>
+				<p className={styles.deckMeta}>
+					Tap a player to move them to another team, or a team to rename it.
+				</p>
 			</section>
 
 			<section className={ui.section} aria-labelledby="rules-heading">
@@ -217,7 +288,7 @@ export function GameSetup({
 
 			<div className={ui.bottomBar}>
 				{!canStart && (
-					<p className={styles.hint}>Add a player to at least one team</p>
+					<p className={styles.hint}>Add at least one player</p>
 				)}
 				<button
 					type="button"
@@ -233,12 +304,20 @@ export function GameSetup({
 				<TeamSheet
 					key={editingTeam.id}
 					team={editingTeam}
-					canRemove={teams.length > 1}
 					onRename={(name) => updateTeam(editingTeam.id, { name })}
-					onAddPlayer={(name) => addPlayer(editingTeam.id, name)}
-					onRemovePlayer={(playerId) => removePlayer(editingTeam.id, playerId)}
-					onRemoveTeam={() => removeTeam(editingTeam.id)}
 					onClose={() => setEditingTeamId(null)}
+				/>
+			)}
+			{editingPlayer && (
+				<PlayerSheet
+					key={editingPlayer.player.id}
+					player={editingPlayer.player}
+					teams={teams}
+					onMove={(teamId) => movePlayer(editingPlayer.player.id, teamId)}
+					onRemove={() =>
+						removePlayer(editingPlayer.team.id, editingPlayer.player.id)
+					}
+					onClose={() => setEditingPlayerId(null)}
 				/>
 			)}
 		</div>

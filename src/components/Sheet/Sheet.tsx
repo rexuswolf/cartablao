@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useId } from "react";
+import { useBackHandler } from "../../shared/hooks/useBackHandler";
 import ui from "../../shared/styles/ui.module.css";
 import { Icon } from "../Icon/Icon";
 
@@ -24,6 +25,8 @@ export function Sheet({
 	tall = false,
 }: SheetProps) {
 	const titleId = useId();
+	// The phone's back gesture closes the sheet instead of leaving the app
+	useBackHandler(true, onClose);
 
 	useEffect(() => {
 		const sheetId = Symbol("sheet");

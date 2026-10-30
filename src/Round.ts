@@ -33,6 +33,11 @@ export class Round {
         return this.roundNumber;
     }
 
+    // Returns the stored turn itself so corrections can update it
+    getLastTurn(): Turn | null {
+        return this.turns[this.turns.length - 1] ?? null;
+    }
+
     addTurn(turn: Turn): void {
         this.turns.push({ ...turn });
     }

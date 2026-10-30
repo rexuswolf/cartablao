@@ -9,11 +9,15 @@ interface EndScreenProps {
 }
 
 export function EndScreen({ rounds, teams, onPlayAgain }: EndScreenProps) {
+	// A game ended early leaves later rounds unplayed
+	const playedRounds = rounds.filter((round) => round.getTurns().length > 0)
+		.length;
+
 	return (
 		<Scoreboard
 			rounds={rounds}
 			teams={teams}
-			badge={`Game over after ${rounds.length} ${rounds.length === 1 ? "round" : "rounds"}`}
+			badge={`Game over after ${playedRounds} ${playedRounds === 1 ? "round" : "rounds"}`}
 			isFinal
 			actionLabel="Play again"
 			onAction={onPlayAgain}

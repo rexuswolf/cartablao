@@ -6,6 +6,12 @@ export const TEAM_COLORS = [
     '#00a6a6', '#ff9f1c', '#5cc8ff', '#c2e812', '#ffd23f',
 ];
 
+// Display names for TEAM_COLORS, used to name new teams ("Purple Team")
+const TEAM_COLOR_NAMES: Record<string, string> = {
+    '#ff5b3a': 'Red', '#3355ff': 'Blue', '#2fb872': 'Green', '#9b5cff': 'Purple', '#ff7ab6': 'Pink',
+    '#00a6a6': 'Teal', '#ff9f1c': 'Orange', '#5cc8ff': 'Sky', '#c2e812': 'Lime', '#ffd23f': 'Yellow',
+};
+
 
 
 export function useTeamManager(initialTeams: Team[] = []) {
@@ -27,6 +33,38 @@ export function useTeamManager(initialTeams: Team[] = []) {
             return newTeam;
         }
         return null;
+    }, []);
+
+    // Adds empty teams, or removes teams from the end and moves their players to the smallest teams
+    const setTeamCount = useCallback((count: number) => {
+        setTeams(prev => {
+            if (count < 1 || count === prev.length) return prev;
+
+            if (count > prev.length) {
+                const usedColors = new Set(prev.map(team => team.color));
+                const added: Team[] = [];
+                for (let index = prev.length; index < count; index++) {
+                    const color = TEAM_COLORS.find(c => !usedColors.has(c))
+                        ?? TEAM_COLORS[index % TEAM_COLORS.length];
+                    usedColors.add(color);
+                    const colorName = TEAM_COLOR_NAMES[color];
+                    added.push({
+                        id: `team-${Date.now()}-${index}`,
+                        name: colorName ? `${colorName} Team` : `Team ${index + 1}`,
+                        color,
+                        players: [],
+                    });
+                }
+                return [...prev, ...added];
+            }
+
+            const kept = prev.slice(0, count).map(team => ({ ...team, players: [...team.players] }));
+            for (const player of prev.slice(count).flatMap(team => team.players)) {
+                const smallest = kept.reduce((a, b) => (b.players.length < a.players.length ? b : a));
+                smallest.players.push({ ...player, teamId: smallest.id });
+            }
+            return kept;
+        });
     }, []);
 
     const removeTeam = useCallback((teamId: string) => {
@@ -61,7 +99,11 @@ export function useTeamManager(initialTeams: Team[] = []) {
 
     const balanceTeams = useCallback(() => {
         const allPlayers = teams.flatMap(team => team.players);
-        const shuffledPlayers = [...allPlayers].sort(() => Math.random() - 0.5);
+        const shuffledPlayers = [...allPlayers];
+        for (let i = shuffledPlayers.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledPlayers[i], shuffledPlayers[j]] = [shuffledPlayers[j], shuffledPlayers[i]];
+        }
 
         const balancedTeams = teams.map((team, index) => ({
             ...team,
@@ -126,6 +168,7 @@ export function useTeamManager(initialTeams: Team[] = []) {
         // Actions
         addTeam,
         removeTeam,
+        setTeamCount,
         addPlayer,
         removePlayer,
         balanceTeams,
