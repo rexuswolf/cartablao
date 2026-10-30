@@ -1,6 +1,7 @@
 import type { DeckCard } from "../components/Card/DeckCard";
 import { Language } from "./language";
 
+// Keeps the app's old name so data saved by earlier versions is still found
 const SAVED_DECKS_STORAGE_KEY = 'charades-saved-decks';
 
 // A deck made with AI, typed in or imported. It stays in the language it was written in.

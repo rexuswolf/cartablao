@@ -1,6 +1,8 @@
-# 🎭 Charades AI - Interactive Charades Game
+# 🎭 Cartablao
 
-A modern, interactive charades game built with React, TypeScript, and Vite. Features AI-powered custom deck generation using Google's Gemini API.
+A party game for teams in Spanish and English, built with React, TypeScript, and Vite: the same cards come back each round, first described, then with one word, then acted out. Features AI-powered custom deck generation using Google's Gemini API.
+
+The name joins *carta* (card) and *tablao*, the stage where flamenco is performed: each turn, someone draws a card and steps up to perform for their team.
 
 ## ✨ Features
 

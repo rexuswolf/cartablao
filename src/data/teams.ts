@@ -2,6 +2,7 @@ import type { Player, Team } from '../Game'
 import { TRANSLATIONS } from '../shared/i18n/translations'
 import { GAME_LANGUAGES, type GameLanguage } from './language'
 
+// Keeps the app's old name so data saved by earlier versions is still found
 const TEAMS_STORAGE_KEY = 'charades-teams'
 
 // The name a new team gets: its color ("Red Team"), or its number when the color has no name

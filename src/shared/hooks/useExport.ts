@@ -23,7 +23,7 @@ export function useExport() {
             const exportData = exportDecks();
             const blob = new Blob([exportData], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const filename = `charades-decks-${new Date().toISOString().split('T')[0]}.json`;
+            const filename = `cartablao-decks-${new Date().toISOString().split('T')[0]}.json`;
 
             const a = document.createElement('a');
             a.href = url;

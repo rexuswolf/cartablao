@@ -17,6 +17,10 @@ export function StartScreen({
 	return (
 		<div className={`${ui.screen} ${styles.startScreen}`}>
 			<div className={styles.topBar}>
+				<span className={styles.brand}>
+					<img src="/favicon.svg" alt="" width={36} height={36} />
+					Cartablao
+				</span>
 				<LanguageButton onChange={onLanguageChange} />
 			</div>
 

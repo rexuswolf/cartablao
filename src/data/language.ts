@@ -14,6 +14,7 @@ export function isGameLanguage(value: unknown): value is GameLanguage {
     return value === "es" || value === "en";
 }
 
+// Keeps the app's old name so data saved by earlier versions is still found
 const GAME_LANGUAGE_STORAGE_KEY = "charades-language";
 
 // The browser's preferred language when it is Spanish or English, otherwise English
