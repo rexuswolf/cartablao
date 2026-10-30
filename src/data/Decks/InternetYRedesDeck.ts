@@ -45,5 +45,15 @@ export const INTERNET_Y_REDES_DECK = new Deck({
         { id: "influencer-giveaway", text: { es: "Influencer haciendo un sorteo", en: "Influencer Giveaway" } },
         { id: "cracked-screen", text: { es: "Pantalla rota", en: "Cracked Screen" } },
         { id: "phone-update", text: { es: "Actualización del móvil", en: "Phone Update" } },
+
+        // Creators
+        { id: "mrbeast", text: "MrBeast" },
+        { id: "pewdiepie", text: "PewDiePie" },
+        { id: "ishowspeed", text: "iShowSpeed" },
+        { id: "kai-cenat", text: "Kai Cenat" },
+        { id: "ibai", text: "Ibai" },
+        { id: "el-rubius", text: "El Rubius" },
+        { id: "auronplay", text: "AuronPlay" },
+        { id: "thegrefg", text: "TheGrefg" },
     ],
 });

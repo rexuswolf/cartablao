@@ -1,10 +1,11 @@
 import { Deck } from "./Deck";
 
-export const MARVEL_CHARACTERS_DECK = new Deck({
-    id: "marvel-characters",
+export const SUPERHEROES_DECK = new Deck({
+    id: "superheroes",
     emoji: "🦸",
-    name: { es: "Personajes de Marvel", en: "Marvel Characters" },
+    name: { es: "Superhéroes", en: "Superheroes" },
     cards: [
+        // Marvel
         { id: "spider-man", text: "Spider-Man" },
         { id: "iron-man", text: "Iron Man" },
         { id: "captain-america", text: { es: "Capitán América", en: "Captain America" } },
@@ -35,5 +36,28 @@ export const MARVEL_CHARACTERS_DECK = new Deck({
         { id: "venom", text: "Venom" },
         { id: "green-goblin", text: { es: "Duende Verde", en: "Green Goblin" } },
         { id: "ultron", text: { es: "Ultrón", en: "Ultron" } },
+
+        // DC
+        { id: "superman", text: "Superman" },
+        { id: "batman", text: "Batman" },
+        { id: "wonder-woman", text: "Wonder Woman" },
+        { id: "aquaman", text: "Aquaman" },
+        { id: "the-flash", text: { es: "Flash", en: "The Flash" } },
+        { id: "green-lantern", text: { es: "Linterna Verde", en: "Green Lantern" } },
+        { id: "robin", text: "Robin" },
+        { id: "supergirl", text: "Supergirl" },
+        { id: "catwoman", text: "Catwoman" },
+        { id: "harley-quinn", text: "Harley Quinn" },
+        { id: "joker", text: "Joker" },
+        { id: "lex-luthor", text: "Lex Luthor" },
+
+        // Other heroes
+        { id: "invisible-woman", text: { es: "La Mujer Invisible", en: "Invisible Woman" } },
+        { id: "the-thing", text: { es: "La Cosa", en: "The Thing" } },
+        { id: "human-torch", text: { es: "La Antorcha Humana", en: "Human Torch" } },
+        { id: "invincible", text: { es: "Invencible", en: "Invincible" } },
+        { id: "hellboy", text: "Hellboy" },
+        { id: "capitan-trueno", text: "Capitán Trueno" },
+        { id: "superlopez", text: "Superlópez" },
     ],
 });

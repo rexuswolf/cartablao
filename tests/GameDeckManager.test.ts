@@ -105,18 +105,19 @@ describe('GameDeckManager', () => {
     describe('mixing decks', () => {
         it('plays a card shared by two decks once', () => {
             const manager = new GameDeckManager('en');
-            manager.selectOnlyDecks(['marvel-characters']);
-            const marvelCount = manager.getState().mixedCards.length;
+            manager.selectOnlyDecks(['superheroes']);
+            const heroesCount = manager.getState().mixedCards.length;
             manager.selectOnlyDecks(['blockbuster-movies']);
             const moviesCount = manager.getState().mixedCards.length;
 
-            manager.selectOnlyDecks(['marvel-characters', 'blockbuster-movies']);
+            manager.selectOnlyDecks(['superheroes', 'blockbuster-movies']);
 
             const cardIds = manager.getState().mixedCards.map(card => card.cardId);
             expect(cardIds.filter(id => id === 'iron-man')).toHaveLength(1);
             expect(new Set(cardIds).size).toBe(cardIds.length);
-            // Iron Man, Spider-Man, Captain America, Thor, Deadpool, Black Panther and Doctor Strange are in both
-            expect(cardIds).toHaveLength(marvelCount + moviesCount - 7);
+            // Iron Man, Spider-Man, Captain America, Thor, Deadpool, Black Panther, Doctor Strange,
+            // Batman, Wonder Woman and Aquaman are in both
+            expect(cardIds).toHaveLength(heroesCount + moviesCount - 10);
         });
 
         it('dedupes by id even when the shared card reads differently from other cards', () => {

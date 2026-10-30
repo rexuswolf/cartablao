@@ -340,4 +340,9 @@ textarea.input {
 	.sheetFull {
 		height: min(88dvh, 820px);
 	}
+
+	/* Follows the dialog's rounded bottom corners (inside its 3px border) instead of poking out */
+	.sheetFooter {
+		border-radius: 0 0 calc(var(--radius-lg) - 3px) calc(var(--radius-lg) - 3px);
+	}
 }

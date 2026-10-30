@@ -1,0 +1,46 @@
+import { Deck } from "./Deck";
+
+export const FEELINGS_AND_DANCES_DECK = new Deck({
+    id: "feelings-and-dances",
+    emoji: "💃",
+    name: { es: "Emociones y bailes", en: "Feelings & Dance Moves" },
+    cards: [
+        // Feelings
+        { id: "happy", text: { es: "Feliz", en: "Happy" } },
+        { id: "sad", text: { es: "Triste", en: "Sad" } },
+        { id: "angry", text: { es: "Enfadado", en: "Angry" } },
+        { id: "scared", text: { es: "Asustado", en: "Scared" } },
+        { id: "surprised", text: { es: "Sorprendido", en: "Surprised" } },
+        { id: "bored", text: { es: "Aburrido", en: "Bored" } },
+        { id: "embarrassed", text: { es: "Avergonzado", en: "Embarrassed" } },
+        { id: "jealous", text: { es: "Celoso", en: "Jealous" } },
+        { id: "nervous", text: { es: "Nervioso", en: "Nervous" } },
+        { id: "in-love", text: { es: "Enamorado", en: "In Love" } },
+        { id: "proud", text: { es: "Orgulloso", en: "Proud" } },
+        { id: "confused", text: { es: "Confundido", en: "Confused" } },
+        { id: "disgusted", text: { es: "Asqueado", en: "Disgusted" } },
+        { id: "tired", text: { es: "Cansado", en: "Tired" } },
+        { id: "excited", text: { es: "Emocionado", en: "Excited" } },
+        { id: "shy", text: { es: "Tímido", en: "Shy" } },
+        { id: "guilty", text: { es: "Culpable", en: "Guilty" } },
+        { id: "relieved", text: { es: "Aliviado", en: "Relieved" } },
+
+        // Dance moves
+        { id: "moonwalk", text: "Moonwalk" },
+        { id: "the-robot", text: { es: "El robot", en: "The Robot" } },
+        { id: "waltz", text: { es: "Vals", en: "Waltz" } },
+        { id: "tango", text: "Tango" },
+        { id: "twerk", text: "Twerk" },
+        { id: "ballet", text: "Ballet" },
+        { id: "breakdance", text: "Breakdance" },
+        { id: "floss", text: "Floss" },
+        { id: "conga-line", text: { es: "La conga", en: "Conga Line" } },
+        { id: "limbo-dance", text: "Limbo" },
+        { id: "tap-dance", text: { es: "Claqué", en: "Tap Dance" } },
+        { id: "sevillanas", text: "Sevillanas" },
+        { id: "charleston", text: { es: "Charlestón", en: "Charleston" } },
+        { id: "can-can", text: { es: "Cancán", en: "Can-Can" } },
+        { id: "hula", text: "Hula" },
+        { id: "zumba", text: "Zumba" },
+    ],
+});
