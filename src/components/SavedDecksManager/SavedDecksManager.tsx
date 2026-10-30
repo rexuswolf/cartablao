@@ -7,12 +7,11 @@ import {
 	getSavedDecks,
 	renameDeck,
 } from "../../data/savedDecks";
-import type { GameCard } from "../Card/GameCard";
 import { ImportExportDialog } from "../ImportExportDialog/ImportExportDialog";
 import styles from "./SavedDecksManager.module.css";
 
 interface SavedDecksManagerProps {
-	onDeckSelected: (deck: GameCard[]) => void;
+	onDeckSelected: (deckId: string) => void;
 	onClose: () => void;
 }
 
@@ -27,15 +26,8 @@ export function SavedDecksManager({
 	const [showImportExport, setShowImportExport] = useState(false);
 
 	const handleUseDeck = (deckId: string) => {
-		const cards = getDeckCards(deckId);
-		if (cards) {
-			onDeckSelected(
-				cards.map((card) => ({
-					id: Date.now(),
-					word: card,
-					deckId,
-				})),
-			);
+		if (getDeckCards(deckId)) {
+			onDeckSelected(deckId);
 			onClose();
 		}
 	};

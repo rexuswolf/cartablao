@@ -275,6 +275,9 @@ describe('useTeamManager', () => {
             expect(team1?.players.length).toBeGreaterThanOrEqual(1);
             expect(team2?.players.length).toBeGreaterThanOrEqual(1);
             expect(result.current.totalPlayers).toBe(4);
+            for (const team of result.current.teams) {
+                expect(team.players.every(player => player.teamId === team.id)).toBe(true);
+            }
         });
 
         it('should handle balancing with empty teams', () => {

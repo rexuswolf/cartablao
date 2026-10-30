@@ -1,5 +1,8 @@
 import type { GameConfig } from "../../Game";
-import { useGameConfig } from "../../shared/hooks/useGameConfig";
+import {
+	type PresetName,
+	useGameConfig,
+} from "../../shared/hooks/useGameConfig";
 import type { GameCard } from "../Card/GameCard";
 import styles from "./GameConfig.module.css";
 
@@ -28,8 +31,8 @@ export function GameConfigScreen({
 		isValid,
 	} = useGameConfig();
 
-	const handlePresetChange = (presetName: string) => {
-		selectPreset(presetName as any);
+	const handlePresetChange = (presetName: PresetName) => {
+		selectPreset(presetName);
 	};
 
 	const handleConfigChange = (

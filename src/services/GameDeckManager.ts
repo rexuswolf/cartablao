@@ -38,6 +38,11 @@ export class GameDeckManager {
     }
 
     private initializeAvailableDecks(): void {
+        this.loadAvailableDecks(new Set([DEFAULT_DECK_ID]));
+    }
+
+    // Rebuilds the deck lists from the library and storage, keeping the given decks selected
+    private loadAvailableDecks(selectedDeckIds: Set<string>): void {
         const savedDecks = getSavedDecks();
         const libraryDecks = getAllDecks();
 
@@ -47,7 +52,7 @@ export class GameDeckManager {
             name: deck.name,
             cardCount: deck.cards.length,
             language: deck.language,
-            isSelected: false
+            isSelected: selectedDeckIds.has(deck.id)
         }));
 
         this.customDecks = savedDecks.map(deck => ({
@@ -55,20 +60,26 @@ export class GameDeckManager {
             name: deck.name,
             cardCount: deck.cards.length,
             language: deck.language,
-            isSelected: false
+            isSelected: selectedDeckIds.has(deck.id)
         }));
 
         // Combine all decks for the main state
         this.state.availableDecks = [...this.officialDecks, ...this.customDecks];
+        this.state.selectedDecks = this.state.availableDecks.filter(deck => deck.isSelected);
+        this.ensureDeckSelected();
 
-        // Start with default deck selected
+        this.mixSelectedDecks();
+    }
+
+    // Falls back to the default deck when nothing is selected
+    private ensureDeckSelected(): void {
+        if (this.state.selectedDecks.length > 0) return;
+
         const defaultDeck = this.state.availableDecks.find(deck => deck.deckId === DEFAULT_DECK_ID);
         if (defaultDeck) {
             defaultDeck.isSelected = true;
             this.state.selectedDecks = [defaultDeck];
         }
-
-        this.mixSelectedDecks();
     }
 
     public getOfficialDecks(): GameDeckSelection[] {
@@ -80,7 +91,13 @@ export class GameDeckManager {
     }
 
     public getState(): GameDeckManagerState {
-        return { ...this.state };
+        // Copy nested data so callers (e.g. React state) never share objects this class mutates
+        return {
+            ...this.state,
+            selectedDecks: this.state.selectedDecks.map(deck => ({ ...deck })),
+            availableDecks: this.state.availableDecks.map(deck => ({ ...deck })),
+            mixedCards: [...this.state.mixedCards],
+        };
     }
 
     public toggleDeckSelection(deckId: string): void {
@@ -98,13 +115,7 @@ export class GameDeckManager {
         }
 
         // Ensure at least one deck is selected
-        if (this.state.selectedDecks.length === 0) {
-            const defaultDeck = this.state.availableDecks.find(deck => deck.deckId === DEFAULT_DECK_ID);
-            if (defaultDeck) {
-                defaultDeck.isSelected = true;
-                this.state.selectedDecks = [defaultDeck];
-            }
-        }
+        this.ensureDeckSelected();
 
         this.mixSelectedDecks();
     }
@@ -127,13 +138,7 @@ export class GameDeckManager {
         }
 
         // Ensure at least one deck is selected
-        if (this.state.selectedDecks.length === 0) {
-            const defaultDeck = this.state.availableDecks.find(deck => deck.deckId === DEFAULT_DECK_ID);
-            if (defaultDeck) {
-                defaultDeck.isSelected = true;
-                this.state.selectedDecks = [defaultDeck];
-            }
-        }
+        this.ensureDeckSelected();
 
         this.mixSelectedDecks();
     }
@@ -147,26 +152,21 @@ export class GameDeckManager {
     }
 
     public deselectAllDecks(): void {
-        this.state.availableDecks.forEach(deck => {
-            deck.isSelected = false;
-        });
-        this.state.selectedDecks = [];
-
         // Ensure at least one deck is selected (fallback to default)
-        const defaultDeck = this.state.availableDecks.find(deck => deck.deckId === DEFAULT_DECK_ID);
-        if (defaultDeck) {
-            defaultDeck.isSelected = true;
-            this.state.selectedDecks = [defaultDeck];
-        }
-
-        this.mixSelectedDecks();
+        this.selectOnlyDecks([]);
     }
 
     public selectDefaultDeckOnly(): void {
+        this.selectOnlyDecks([DEFAULT_DECK_ID]);
+    }
+
+    public selectOnlyDecks(deckIds: string[]): void {
+        const ids = new Set(deckIds);
         this.state.availableDecks.forEach(deck => {
-            deck.isSelected = deck.deckId === DEFAULT_DECK_ID;
+            deck.isSelected = ids.has(deck.deckId);
         });
-        this.state.selectedDecks = this.state.availableDecks.filter(deck => deck.deckId === DEFAULT_DECK_ID);
+        this.state.selectedDecks = this.state.availableDecks.filter(deck => deck.isSelected);
+        this.ensureDeckSelected();
         this.mixSelectedDecks();
     }
 
@@ -178,6 +178,8 @@ export class GameDeckManager {
         }
 
         const allCards: GameCard[] = [];
+        // Cards are looked up by id during the game, so every card needs a unique one
+        let nextCardId = 0;
 
         for (const selectedDeck of this.state.selectedDecks) {
             let deckCards: GameCard[] = [];
@@ -186,7 +188,7 @@ export class GameDeckManager {
             const libraryDeck = DECK_LIBRARY[selectedDeck.deckId as keyof typeof DECK_LIBRARY];
             if (libraryDeck) {
                 deckCards = libraryDeck.cards.map((card) => ({
-                    id: Date.now(),
+                    id: nextCardId++,
                     word: card,
                     deckId: libraryDeck.id,
                 }));
@@ -195,7 +197,7 @@ export class GameDeckManager {
                 const savedDeckCards = getDeckCards(selectedDeck.deckId);
                 if (savedDeckCards) {
                     deckCards = savedDeckCards.map((card) => ({
-                        id: Date.now(),
+                        id: nextCardId++,
                         word: card,
                         deckId: selectedDeck.deckId,
                     }));
@@ -237,36 +239,8 @@ export class GameDeckManager {
     }
 
     public refreshAvailableDecks(): void {
-        const savedDecks = getSavedDecks();
-        const libraryDecks = getAllDecks();
-
-        // Update official decks
-        this.officialDecks = libraryDecks.map(deck => ({
-            deckId: deck.id,
-            name: deck.name,
-            cardCount: deck.cards.length,
-            language: deck.language,
-            isSelected: false
-        }));
-
-        // Update custom decks
-        this.customDecks = savedDecks.map(deck => ({
-            deckId: deck.id,
-            name: deck.name,
-            cardCount: deck.cards.length,
-            language: deck.language,
-            isSelected: false
-        }));
-
-        // Update the combined available decks
-        this.state.availableDecks = [...this.officialDecks, ...this.customDecks];
-
-        // Update selected decks to only include existing ones
-        this.state.selectedDecks = this.state.selectedDecks.filter(selectedDeck =>
-            this.state.availableDecks.some(availableDeck => availableDeck.deckId === selectedDeck.deckId)
-        );
-
-        this.mixSelectedDecks();
+        // Keep the current selection, dropping decks that no longer exist
+        this.loadAvailableDecks(new Set(this.state.selectedDecks.map(deck => deck.deckId)));
     }
 
     public resetToDefault(): void {

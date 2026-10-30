@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Language } from "../../data/language";
 import type { GameDeckManagerState } from "../../services/GameDeckManager";
 import { GameDeckManager } from "../../services/GameDeckManager";
@@ -18,35 +18,17 @@ export function DeckSelector({
 	onDeckStateChange,
 	onClose,
 }: DeckSelectorProps) {
-	const [deckManager] = useState(() => new GameDeckManager());
+	// Start from the selection held by App so both stay in sync
+	const [deckManager] = useState(() => {
+		const manager = new GameDeckManager();
+		manager.selectOnlyDecks(
+			currentDeckState.selectedDecks.map((deck) => deck.deckId),
+		);
+		return manager;
+	});
 	const [activeTab, setActiveTab] = useState<TabType>("official");
 	const [languageFilter, setLanguageFilter] = useState<string>("all");
 	const [showDeckExplorer, setShowDeckExplorer] = useState(false);
-
-	// Sync the deck manager with the current state from App
-	useEffect(() => {
-		deckManager.refreshAvailableDecks();
-
-		// Get the IDs of currently selected decks from the App state
-		const selectedDeckIds = new Set(
-			currentDeckState.selectedDecks.map((deck) => deck.deckId),
-		);
-
-		// Sync all available decks with the App state
-		deckManager.getOfficialDecks().forEach((deck) => {
-			deckManager.setDeckSelection(
-				deck.deckId,
-				selectedDeckIds.has(deck.deckId),
-			);
-		});
-
-		deckManager.getCustomDecks().forEach((deck) => {
-			deckManager.setDeckSelection(
-				deck.deckId,
-				selectedDeckIds.has(deck.deckId),
-			);
-		});
-	}, [currentDeckState.selectedDecks, deckManager]);
 
 	const handleToggleDeck = (deckId: string) => {
 		deckManager.toggleDeckSelection(deckId);

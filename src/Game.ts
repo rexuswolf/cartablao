@@ -72,17 +72,11 @@ export class Game {
     }
 
     getCurrentCard(): GameCard | null {
-        if (!this.currentTurn) {
-            console.log("No current turn");
-            return null;
-        }
-        const currentRoundRemainingCards = this.getCurrentRound()?.getRemainingCards();
-        if (!currentRoundRemainingCards || currentRoundRemainingCards.length === 0) {
-            console.log("No remaining cards in round");
-            return null;
-        }
+        if (!this.currentTurn) return null;
 
-        console.log(`Current card: ${currentRoundRemainingCards[0].word}, Total remaining: ${currentRoundRemainingCards.length}`);
+        const currentRoundRemainingCards = this.getCurrentRound()?.getRemainingCards();
+        if (!currentRoundRemainingCards || currentRoundRemainingCards.length === 0) return null;
+
         return currentRoundRemainingCards[0];
     }
 
@@ -339,7 +333,7 @@ export class Game {
         this.currentTurn = null;
         this.turnIndex = 0;
         this.rounds = this.createRounds(); // Recreate all rounds
-        this.startNewRound();
+        this.startFirstRound();
     }
 
     clone(): Game {

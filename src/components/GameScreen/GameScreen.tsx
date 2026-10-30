@@ -29,7 +29,9 @@ export function GameScreen({
 }: GameScreenProps) {
 	const [game] = useState(() => new Game(config, teams, deck));
 	const [timeLeft, setTimeLeft] = useState(config.secondsPerRound);
-	const [isTimerRunning, setIsTimerRunning] = useState(false);
+	const [isTimerRunning, setIsTimerRunning] = useState(
+		!config.enablePreparationPhase,
+	);
 	const [turnState, setTurnState] = useState<TurnState>(
 		config.enablePreparationPhase ? "preparing" : "playing",
 	);
@@ -41,24 +43,39 @@ export function GameScreen({
 	);
 
 	const currentPlayer = game.getCurrentPlayer();
-	const currentRound = game.getCurrentRound();
 
-	// Initialize the game
-	useEffect(() => {
+	// Reset the turn UI for whoever plays next
+	const startNextTurnUI = useCallback(() => {
 		setTimeLeft(config.secondsPerRound);
 		setTurnState(config.enablePreparationPhase ? "preparing" : "playing");
 		setIsTimerRunning(!config.enablePreparationPhase);
-	}, [config]);
+		setSwipeDirection(null);
+		setIsSwiping(false);
+		setCurrentCard(game.getCurrentCard());
+	}, [game, config]);
 
-	// Update current card when game state changes
-	useEffect(() => {
-		const card = game.getCurrentCard();
-		console.log(
-			"Game state changed, updating current card:",
-			card?.word || "null",
-		);
-		setCurrentCard(card);
-	}, [game]);
+	// Close the current turn and move to the next turn, round, or end screen
+	const finishTurn = useCallback(
+		(remainingTime: number) => {
+			game.updateTimeLeft(remainingTime);
+			game.endCurrentTurn();
+
+			if (game.isGameFinished()) {
+				setIsTimerRunning(false);
+				onGameEnd(game.getRounds());
+				return;
+			}
+
+			if (game.isRoundFinished()) {
+				setIsTimerRunning(false);
+				setShowRoundComplete(true);
+				return;
+			}
+
+			startNextTurnUI();
+		},
+		[game, onGameEnd, startNextTurnUI],
+	);
 
 	const handleStartTurn = useCallback(() => {
 		setTurnState("playing");
@@ -66,76 +83,40 @@ export function GameScreen({
 	}, []);
 
 	const handleEndTurn = () => {
-		// Save current round with remaining time
-		if (currentRound) {
-			game.updateTimeLeft(timeLeft);
-		}
+		finishTurn(timeLeft);
+	};
 
-		game.endCurrentTurn();
-		setTimeLeft(config.secondsPerRound);
-		setTurnState(config.enablePreparationPhase ? "preparing" : "playing");
-		setIsTimerRunning(!config.enablePreparationPhase);
-		setCurrentCard(game.getCurrentCard()); // Update current card for new turn
+	const handleCardResolved = () => {
+		setSwipeDirection(null);
+		setIsSwiping(false);
 
-		// Check if game is finished after ending turn
-		if (game.isGameFinished()) {
-			onGameEnd(game.getRounds());
+		// The turn ends once the player has gone through every remaining card
+		if (game.getCurrentRoundRemainingCards() === 0) {
+			finishTurn(timeLeft);
+		} else {
+			setCurrentCard(game.getCurrentCard());
 		}
 	};
 
 	const handleSkip = () => {
 		if (currentCard && turnState === "playing") {
 			game.skipCard();
-			setSwipeDirection(null);
-			setIsSwiping(false);
-			setCurrentCard(game.getCurrentCard());
-
-			// If no cards left in current turn, end turn
-			const currentTurn = game.getCurrentTurn();
-			if (currentTurn && game.getCurrentRoundRemainingCards() === 0) {
-				game.endCurrentTurn();
-				setIsTimerRunning(false);
-
-				// Check if game is finished after ending turn
-				if (game.isGameFinished()) {
-					onGameEnd(game.getRounds());
-				}
-				// Note: Round completion will be detected by the useEffect that watches game.isRoundFinished()
-			}
+			handleCardResolved();
 		}
 	};
 
 	const handleCorrect = () => {
 		if (currentCard && turnState === "playing") {
 			game.markCardCorrect();
-			setSwipeDirection(null);
-			setIsSwiping(false);
-			setCurrentCard(game.getCurrentCard());
-
-			// If no cards left in the round, end turn and check if round/game is finished
-			if (game.getCurrentRoundRemainingCards() === 0) {
-				game.endCurrentTurn();
-				setIsTimerRunning(false);
-
-				// Check if game is finished after ending turn
-				if (game.isGameFinished()) {
-					onGameEnd(game.getRounds());
-				}
-
-				if (game.isRoundFinished()) {
-					setShowRoundComplete(true);
-				}
-			}
+			handleCardResolved();
 		}
 	};
 
 	const handleNextRound = useCallback(() => {
 		game.startNextRound();
 		setShowRoundComplete(false);
-		setTimeLeft(config.secondsPerRound);
-		setTurnState(config.enablePreparationPhase ? "preparing" : "playing");
-		setIsTimerRunning(!config.enablePreparationPhase);
-	}, [game, config]);
+		startNextTurnUI();
+	}, [game, startNextTurnUI]);
 
 	const handleSwiping = useCallback(
 		(eventData: SwipeEventData) => {
@@ -160,67 +141,33 @@ export function GameScreen({
 
 	// Timer logic
 	useEffect(() => {
-		let interval: number | null = null;
+		if (!isTimerRunning || turnState !== "playing") return;
 
-		if (isTimerRunning && timeLeft > 0 && turnState === "playing") {
-			interval = setInterval(() => {
-				setTimeLeft((prev) => {
-					if (prev <= 1) {
-						// End current player's turn
-						if (currentRound) {
-							game.updateTimeLeft(0);
-						}
-						game.endCurrentTurn();
-						setTimeLeft(config.secondsPerRound);
-						setTurnState(
-							config.enablePreparationPhase ? "preparing" : "playing",
-						);
-						setIsTimerRunning(!config.enablePreparationPhase);
+		const interval = setInterval(() => {
+			setTimeLeft((prev) => Math.max(prev - 1, 0));
+		}, 1000);
 
-						// Check if game is finished after ending turn
-						if (game.isGameFinished()) {
-							onGameEnd(game.getRounds());
-						}
-						// Note: Round completion will be detected by the useEffect that watches game.isRoundFinished()
+		return () => clearInterval(interval);
+	}, [isTimerRunning, turnState]);
 
-						return config.secondsPerRound;
-					}
-					return prev - 1;
-				});
-			}, 1000) as unknown as number;
+	// End the turn when time runs out (kept out of the state updater, which must stay pure)
+	useEffect(() => {
+		if (timeLeft === 0 && isTimerRunning && turnState === "playing") {
+			finishTurn(0);
 		}
+	}, [timeLeft, isTimerRunning, turnState, finishTurn]);
 
-		return () => {
-			if (interval) clearInterval(interval);
-		};
-	}, [
-		isTimerRunning,
-		timeLeft,
-		currentRound,
-		game,
-		turnState,
-		config,
-		onGameEnd,
-	]);
-
-	// Check if game is finished
+	// Handle a game that has nothing to play (e.g. an empty deck)
 	useEffect(() => {
 		if (game.isGameFinished()) {
-			// Save final round if there is one
-			if (currentRound) {
-				game.updateTimeLeft(timeLeft);
-			}
-			setIsTimerRunning(false);
 			onGameEnd(game.getRounds());
 		}
-	}, [game, currentRound, timeLeft, onGameEnd]);
+	}, [game, onGameEnd]);
 
-	// Update current round when card changes
+	// Keep the turn's remaining time up to date
 	useEffect(() => {
-		if (currentRound) {
-			game.updateTimeLeft(timeLeft);
-		}
-	}, [timeLeft, game, currentRound]);
+		game.updateTimeLeft(timeLeft);
+	}, [timeLeft, game]);
 
 	const totalRounds = game.getTotalRounds();
 

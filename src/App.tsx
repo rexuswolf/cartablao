@@ -11,7 +11,6 @@ import { StartScreen } from "./components/StartScreen/StartScreen";
 import { TeamSetup } from "./components/TeamSetup/TeamSetup";
 import { migrateSavedDecks } from "./data/savedDecks";
 import type { GameConfig, GameState, Team } from "./Game";
-import { Game } from "./Game";
 import type { Round } from "./Round";
 import type { GameDeckManagerState } from "./services/GameDeckManager";
 import { GameDeckManager } from "./services/GameDeckManager";
@@ -35,7 +34,7 @@ function App() {
 	const [showDeckCreator, setShowDeckCreator] = useState(false);
 	const [showSavedDecks, setShowSavedDecks] = useState(false);
 	const [showDeckSelector, setShowDeckSelector] = useState(false);
-	const [gameInstance, setGameInstance] = useState<Game | null>(null);
+	const [gameDeck, setGameDeck] = useState<GameCard[]>([]);
 
 	const startGame = useCallback(() => {
 		setGameState("config");
@@ -46,20 +45,16 @@ function App() {
 		setGameState("team-setup");
 	}, []);
 
-	const handleTeamSetup = useCallback((teams: Team[]) => {
-		setSelectedTeams(teams);
-		setGameState("playing");
-	}, []);
-
-	// Create game instance when transitioning to playing state
-	useEffect(() => {
-		if (gameState === "playing" && gameConfig && selectedTeams.length > 0) {
+	const handleTeamSetup = useCallback(
+		(teams: Team[]) => {
+			if (!gameConfig) return;
+			setSelectedTeams(teams);
 			// Limit the deck based on config
-			const limitedDeck = deckState.mixedCards.slice(0, gameConfig.maxCards);
-			const game = new Game(gameConfig, selectedTeams, limitedDeck);
-			setGameInstance(game);
-		}
-	}, [gameState, gameConfig, selectedTeams, deckState.mixedCards]);
+			setGameDeck(deckState.mixedCards.slice(0, gameConfig.maxCards));
+			setGameState("playing");
+		},
+		[gameConfig, deckState.mixedCards],
+	);
 
 	const handleGameEnd = useCallback((rounds: Round[]) => {
 		setGameRounds(rounds);
@@ -76,38 +71,48 @@ function App() {
 		setShowDeckCreator(false);
 		setShowSavedDecks(false);
 		setShowDeckSelector(false);
-		setGameInstance(null);
+		setGameDeck([]);
 	}, [deckManager]);
 
-	const handleDeckCreated = useCallback(
-		(_deck: GameCard[]) => {
-			// When a custom deck is created, we need to update the deck manager
-			// For now, we'll just update the mixed cards directly
+	// Play only the deck that was just created or loaded
+	const selectSingleDeck = useCallback(
+		(deckId: string) => {
 			deckManager.refreshAvailableDecks();
+			deckManager.selectOnlyDecks([deckId]);
 			setDeckState(deckManager.getState());
-			setShowDeckCreator(false);
 		},
 		[deckManager],
+	);
+
+	const handleDeckCreated = useCallback(
+		(deckId: string) => {
+			selectSingleDeck(deckId);
+			setShowDeckCreator(false);
+		},
+		[selectSingleDeck],
 	);
 
 	const handleDeckCreatorCancel = useCallback(() => {
+		// The creator may have saved decks, so make them available for selection
+		deckManager.refreshAvailableDecks();
+		setDeckState(deckManager.getState());
 		setShowDeckCreator(false);
-	}, []);
+	}, [deckManager]);
 
 	const handleSavedDeckSelected = useCallback(
-		(_deck: GameCard[]) => {
-			// When a saved deck is selected, we need to update the deck manager
-			// For now, we'll just update the mixed cards directly
-			deckManager.refreshAvailableDecks();
-			setDeckState(deckManager.getState());
+		(deckId: string) => {
+			selectSingleDeck(deckId);
 			setShowSavedDecks(false);
 		},
-		[deckManager],
+		[selectSingleDeck],
 	);
 
 	const handleSavedDecksClose = useCallback(() => {
+		// Decks may have been imported, renamed or deleted while the manager was open
+		deckManager.refreshAvailableDecks();
+		setDeckState(deckManager.getState());
 		setShowSavedDecks(false);
-	}, []);
+	}, [deckManager]);
 
 	const handleDeckSelectorClose = useCallback(() => {
 		setShowDeckSelector(false);
@@ -171,13 +176,13 @@ function App() {
 		);
 	}
 
-	if (gameState === "playing" && gameConfig && gameInstance) {
+	if (gameState === "playing" && gameConfig) {
 		return (
 			<MainLayout>
 				<GameScreen
-					deck={gameInstance.getDeck()}
-					teams={gameInstance.getTeams()}
-					config={gameInstance.getConfig()}
+					deck={gameDeck}
+					teams={selectedTeams}
+					config={gameConfig}
 					onGameEnd={handleGameEnd}
 				/>
 			</MainLayout>

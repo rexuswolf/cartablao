@@ -64,9 +64,10 @@ export function useTeamManager(initialTeams: Team[] = []) {
 
         const balancedTeams = teams.map((team, index) => ({
             ...team,
-            players: shuffledPlayers.filter((_, playerIndex) =>
-                playerIndex % teams.length === index
-            ),
+            players: shuffledPlayers
+                .filter((_, playerIndex) => playerIndex % teams.length === index)
+                // Players moved to another team must point at it, or their turns score for the old team
+                .map(player => ({ ...player, teamId: team.id })),
         }));
 
         setTeams(balancedTeams);

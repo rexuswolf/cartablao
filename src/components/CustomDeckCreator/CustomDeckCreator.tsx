@@ -3,11 +3,10 @@ import { Language } from "../../data/language";
 import { saveDeck } from "../../data/savedDecks";
 import { generateDeckWithGemini } from "../../services/ai";
 import type { DeckCard } from "../Card/DeckCard";
-import type { GameCard } from "../Card/GameCard";
 import styles from "./CustomDeckCreator.module.css";
 
 interface CustomDeckCreatorProps {
-	onDeckCreated: (deck: GameCard[]) => void;
+	onDeckCreated: (deckId: string) => void;
 	onCancel: () => void;
 }
 
@@ -44,6 +43,12 @@ export function CustomDeckCreator({
 	const [manualCards, setManualCards] = useState<DeckCard[]>([]);
 	const [manualError, setManualError] = useState("");
 
+	// Remember saved decks so "Save" followed by "Use" doesn't store them twice
+	const [savedAiDeckId, setSavedAiDeckId] = useState<string | null>(null);
+	const [savedManualDeckId, setSavedManualDeckId] = useState<string | null>(
+		null,
+	);
+
 	const generateDeck = async () => {
 		if (!topic.trim()) {
 			setError("Please enter a topic for your deck");
@@ -61,6 +66,7 @@ export function CustomDeckCreator({
 				language,
 			);
 			setGeneratedCards(cards);
+			setSavedAiDeckId(null);
 		} catch (err) {
 			const errorMessage =
 				err instanceof Error
@@ -72,25 +78,27 @@ export function CustomDeckCreator({
 		}
 	};
 
+	const saveAiDeck = (name: string) => {
+		if (savedAiDeckId) return savedAiDeckId;
+		const deck = saveDeck({
+			deckCards: generatedCards,
+			name,
+			language,
+		});
+		setSavedAiDeckId(deck.id);
+		return deck.id;
+	};
+
 	const handleUseDeck = () => {
 		if (generatedCards.length > 0) {
-			onDeckCreated(
-				generatedCards.map((card) => ({
-					id: Date.now(),
-					word: card,
-					deckId: `deck-${Date.now()}`,
-				})),
-			);
+			// Decks are only playable once stored, so using a deck also saves it
+			onDeckCreated(saveAiDeck(topic));
 		}
 	};
 
 	const handleSaveDeck = () => {
 		if (generatedCards.length > 0) {
-			saveDeck({
-				deckCards: generatedCards,
-				name: saveName || topic,
-				language,
-			});
+			saveAiDeck(saveName || topic);
 			setShowSaveDialog(false);
 			setSaveName("");
 			setShowSuccessMessage(true);
@@ -101,6 +109,7 @@ export function CustomDeckCreator({
 
 	const regenerateDeck = () => {
 		setGeneratedCards([]);
+		setSavedAiDeckId(null);
 		setError("");
 	};
 
@@ -150,28 +159,31 @@ export function CustomDeckCreator({
 		}
 
 		setManualCards(words);
+		setSavedManualDeckId(null);
 		setManualError("");
+	};
+
+	const saveManualDeck = () => {
+		if (savedManualDeckId) return savedManualDeckId;
+		const deck = saveDeck({
+			deckCards: manualCards,
+			name: deckName,
+			language: manualLanguage,
+		});
+		setSavedManualDeckId(deck.id);
+		return deck.id;
 	};
 
 	const handleUseManualDeck = () => {
 		if (manualCards.length > 0) {
-			onDeckCreated(
-				manualCards.map((card) => ({
-					id: Date.now(),
-					word: card,
-					deckId: `deck-${Date.now()}`,
-				})),
-			);
+			// Decks are only playable once stored, so using a deck also saves it
+			onDeckCreated(saveManualDeck());
 		}
 	};
 
 	const handleSaveManualDeck = () => {
 		if (manualCards.length > 0) {
-			saveDeck({
-				deckCards: manualCards,
-				name: deckName,
-				language: manualLanguage,
-			});
+			saveManualDeck();
 			setShowSuccessMessage(true);
 			// Hide success message after 3 seconds
 			setTimeout(() => setShowSuccessMessage(false), 3000);
@@ -180,6 +192,7 @@ export function CustomDeckCreator({
 
 	const clearManualDeck = () => {
 		setManualCards([]);
+		setSavedManualDeckId(null);
 		setWordInput("");
 		setDeckName("");
 		setManualError("");

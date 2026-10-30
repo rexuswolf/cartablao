@@ -1,6 +1,6 @@
-import { getPlayerById, getTeamById } from "../../data/teams";
-import type { Team, Turn } from "../../Game";
+import type { Team } from "../../Game";
 import type { Round } from "../../Round";
+import { getGameResults } from "../../services/GameResults";
 import styles from "./EndScreen.module.css";
 
 interface EndScreenProps {
@@ -10,50 +10,12 @@ interface EndScreenProps {
 }
 
 export function EndScreen({ rounds, teams, onPlayAgain }: EndScreenProps) {
-	// Flatten all turns from all rounds
-	const allTurns: Turn[] = rounds.flatMap((round) => round.getTurns());
-
-	// Calculate team scores
-	const teamScores = teams.map((team) => {
-		const teamTurns = allTurns.filter((turn) => turn.teamId === team.id);
-		const totalCorrect = teamTurns.reduce(
-			(sum, turn) => sum + turn.correctCards.length,
-			0,
-		);
-		const totalSkipped = teamTurns.reduce(
-			(sum, turn) => sum + turn.skippedCards.length,
-			0,
-		);
-
-		return {
-			team,
-			totalCorrect,
-			totalSkipped,
-		};
-	});
-
-	// Sort teams by score (correct cards)
-	const sortedTeams = teamScores.sort(
-		(a, b) => b.totalCorrect - a.totalCorrect,
-	);
-
-	// Calculate individual player stats
-	const playerStats = allTurns.map((turn) => {
-		const player = getPlayerById(turn.playerId);
-		const team = getTeamById(turn.teamId);
-
-		return {
-			player,
-			team,
-			correct: turn.correctCards.length,
-			skipped: turn.skippedCards.length,
-		};
-	});
-
-	const totalCards = allTurns.reduce(
-		(sum, turn) => sum + turn.correctCards.length,
-		0,
-	);
+	const {
+		teamResults: sortedTeams,
+		playerResults: playerStats,
+		leaderScore,
+		totalCorrect: totalCards,
+	} = getGameResults(rounds, teams);
 
 	return (
 		<>
@@ -62,14 +24,14 @@ export function EndScreen({ rounds, teams, onPlayAgain }: EndScreenProps) {
 			<div className={styles.resultsSummary}>
 				<h2>Team Results</h2>
 				<div className={styles.teamResults}>
-					{sortedTeams.map((teamScore, index) => (
+					{sortedTeams.map((teamScore) => (
 						<div key={teamScore.team.id} className={styles.teamResult}>
 							<div
 								className={styles.teamHeader}
 								style={{ color: teamScore.team.color }}
 							>
 								<h3>{teamScore.team.name}</h3>
-								{index === 0 && (
+								{leaderScore > 0 && teamScore.totalCorrect === leaderScore && (
 									<span className={styles.winnerBadge}>🏆 Winner!</span>
 								)}
 							</div>
@@ -101,15 +63,15 @@ export function EndScreen({ rounds, teams, onPlayAgain }: EndScreenProps) {
 			<div className={styles.playerResults}>
 				<h2>Player Performance</h2>
 				<div className={styles.playerList}>
-					{playerStats.map((stat, index) => (
-						<div key={stat.player?.id || index} className={styles.playerResult}>
+					{playerStats.map((stat) => (
+						<div key={stat.player.id} className={styles.playerResult}>
 							<div className={styles.playerInfo}>
-								<span className={styles.playerName}>{stat.player?.name}</span>
+								<span className={styles.playerName}>{stat.player.name}</span>
 								<span
 									className={styles.teamName}
-									style={{ color: stat.team?.color }}
+									style={{ color: stat.team.color }}
 								>
-									{stat.team?.name}
+									{stat.team.name}
 								</span>
 							</div>
 							<div className={styles.playerStats}>

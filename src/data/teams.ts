@@ -1,4 +1,4 @@
-import type { Player, Team } from '../Game'
+import type { Team } from '../Game'
 
 export const SAMPLE_TEAMS: Team[] = [
     {
@@ -31,15 +31,3 @@ export const SAMPLE_TEAMS: Team[] = [
         ]
     }
 ]
-
-export function getAllPlayers(): Player[] {
-    return SAMPLE_TEAMS.flatMap(team => team.players)
-}
-
-export function getTeamById(teamId: string): Team | undefined {
-    return SAMPLE_TEAMS.find(team => team.id === teamId)
-}
-
-export function getPlayerById(playerId: string): Player | undefined {
-    return getAllPlayers().find(player => player.id === playerId)
-} 

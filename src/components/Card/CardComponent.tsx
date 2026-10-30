@@ -36,27 +36,25 @@ export function CardComponent({
 			onSwiping(eventData);
 		},
 		onSwiped: (eventData) => {
-			setIsAnimating(true);
-			if (
-				eventData.dir === "Left" &&
-				Math.abs(eventData.deltaX) > SWIPE_TRIGGER_THRESHOLD
-			) {
-				onSkip();
-				setSwipeX(-window.innerWidth); // animate out
-			} else if (
-				eventData.dir === "Right" &&
-				Math.abs(eventData.deltaX) > SWIPE_TRIGGER_THRESHOLD
-			) {
-				onCorrect();
-				setSwipeX(window.innerWidth); // animate out
-			} else {
-				setSwipeX(0); // snap back
-				onSwiped();
-			}
-			setTimeout(() => {
+			const isFarEnough =
+				Math.abs(eventData.deltaX) > SWIPE_TRIGGER_THRESHOLD;
+			// The parent swaps in the next card right away, so show it centered
+			// instead of animating it off screen
+			if (eventData.dir === "Left" && isFarEnough) {
 				setSwipeX(0);
-				setIsAnimating(false);
-			}, 300);
+				onSkip();
+				return;
+			}
+			if (eventData.dir === "Right" && isFarEnough) {
+				setSwipeX(0);
+				onCorrect();
+				return;
+			}
+			// Not far enough: snap back
+			setIsAnimating(true);
+			setSwipeX(0);
+			onSwiped();
+			setTimeout(() => setIsAnimating(false), 300);
 		},
 		trackMouse: true,
 	});

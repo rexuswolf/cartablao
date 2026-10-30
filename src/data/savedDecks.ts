@@ -4,17 +4,25 @@ import { Language } from "./language";
 
 const SAVED_DECKS_STORAGE_KEY = 'charades-saved-decks';
 
+// Date.now() alone collides when several decks are created in the same millisecond (e.g. on import)
+function createDeckId(): string {
+    return `deck-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+// Older versions stored cards as objects with a `word` field
+type StoredCard = string | { word?: string };
+
 interface LocalStorageDeck {
     id: string;
     name: string;
     language: { code: string; display: string };
-    cards: string[];
+    cards: StoredCard[];
 }
 
 export function saveDeck({ deckCards, name, language = Language.universal() }: { deckCards: DeckCard[]; name: string; language?: Language; }): Deck {
     const savedDecks = getSavedDecks();
 
-    const deckId = `deck-${Date.now()}`;
+    const deckId = createDeckId();
     const newDeck: Deck = {
         id: deckId,
         name: name,
@@ -38,7 +46,7 @@ export function getSavedDecks(): Deck[] {
             ...deck,
             language: deck.language ? Language.fromCode(deck.language.code) || Language.universal() : Language.universal(),
             // Ensure cards are strings
-            cards: Array.isArray(deck.cards) ? deck.cards.map((card: any) =>
+            cards: Array.isArray(deck.cards) ? deck.cards.map((card: StoredCard) =>
                 typeof card === 'object' && card.word ? card.word : card
             ) : []
         }));
@@ -137,7 +145,7 @@ export function importDecks(importData: string): { success: boolean; message: st
 
             // Create new deck with fresh ID and timestamps
             const newDeck: Deck = {
-                id: `deck-${Date.now()}`,
+                id: createDeckId(),
                 name: importedDeck.name,
                 language: importedDeck.language || Language.universal(), // Ensure language is set
                 cards: importedDeck.cards,
@@ -181,9 +189,9 @@ export function migrateSavedDecks(): void {
         const decks = JSON.parse(stored);
         let hasChanges = false;
 
-        const migratedDecks = decks.map((deck: any) => {
+        const migratedDecks = decks.map((deck: LocalStorageDeck) => {
             let deckChanges = false;
-            let migratedDeck = { ...deck };
+            const migratedDeck = { ...deck };
 
             // Migrate language property
             if (!deck.language) {
@@ -200,7 +208,7 @@ export function migrateSavedDecks(): void {
 
             // Migrate cards from object format to string format
             if (deck.cards && Array.isArray(deck.cards)) {
-                const migratedCards = deck.cards.map((card: any) => {
+                const migratedCards = deck.cards.map((card: StoredCard) => {
                     if (typeof card === 'object' && card.word) {
                         deckChanges = true;
                         return card.word;
