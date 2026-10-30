@@ -226,6 +226,13 @@ export class GameDeckManager {
         return shuffled;
     }
 
+    // The first few words of a deck, to preview what it contains
+    public getSampleCards(deckId: string, count = 3): string[] {
+        const libraryDeck = DECK_LIBRARY[deckId as keyof typeof DECK_LIBRARY];
+        const cards = libraryDeck ? libraryDeck.cards : getDeckCards(deckId) ?? [];
+        return cards.slice(0, count);
+    }
+
     public getMixedCards(): GameCard[] {
         return [...this.state.mixedCards];
     }

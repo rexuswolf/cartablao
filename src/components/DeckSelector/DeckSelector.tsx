@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Language } from "../../data/language";
 import type { GameDeckManagerState } from "../../services/GameDeckManager";
 import { GameDeckManager } from "../../services/GameDeckManager";
+import { getReadableTextColor } from "../../shared/libs/color";
+import { getDeckColor, splitDeckName } from "../../shared/libs/deckStyle";
 import ui from "../../shared/styles/ui.module.css";
 import { DeckExplorer } from "../DeckExplorer/DeckExplorer";
 import { Icon } from "../Icon/Icon";
@@ -69,6 +71,15 @@ export function DeckSelector({
 	const visibleDecks =
 		activeTab === "official" ? filteredOfficialDecks : filteredCustomDecks;
 
+	const selectedDecks = currentDeckState.selectedDecks;
+	const selectedTitles = selectedDecks.map(
+		(deck) => splitDeckName(deck.name).title,
+	);
+	const selectedSummary =
+		selectedTitles.length > 2
+			? `${selectedTitles.slice(0, 2).join(", ")} and ${selectedTitles.length - 2} more`
+			: selectedTitles.join(", ");
+
 	if (showDeckExplorer) {
 		return (
 			<DeckExplorer
@@ -86,9 +97,33 @@ export function DeckSelector({
 			onClose={onClose}
 			tall
 			footer={
-				<button type="button" className={ui.primary} onClick={onClose}>
-					Use {currentDeckState.mixedCards.length} cards
-				</button>
+				<div className={styles.footer}>
+					<div className={styles.inGame}>
+						<span className={styles.miniStack} aria-hidden="true">
+							{selectedDecks.slice(0, 3).map((deck, i) => (
+								<span
+									key={deck.deckId}
+									className={styles.miniCard}
+									style={{
+										background: getDeckColor(deck.deckId),
+										left: `${i * 16}px`,
+										rotate: `${(i - 1) * 7}deg`,
+									}}
+								/>
+							))}
+						</span>
+						<span className={styles.inGameText}>
+							<span className={styles.inGameNames}>{selectedSummary}</span>
+							<span className={styles.inGameCount}>
+								{selectedDecks.length}{" "}
+								{selectedDecks.length === 1 ? "deck" : "decks"} in the game
+							</span>
+						</span>
+					</div>
+					<button type="button" className={ui.primary} onClick={onClose}>
+						Use {currentDeckState.mixedCards.length} cards
+					</button>
+				</div>
 			}
 		>
 			<div className={styles.tabs} role="group" aria-label="Deck source">
@@ -135,27 +170,56 @@ export function DeckSelector({
 			</div>
 
 			{visibleDecks.length > 0 ? (
-				<ul className={styles.deckList}>
-					{visibleDecks.map((deck) => (
-						<li key={deck.deckId}>
-							<button
-								type="button"
-								className={`${styles.deckItem} ${deck.isSelected ? styles.selected : ""}`}
-								aria-pressed={deck.isSelected}
-								onClick={() => handleToggleDeck(deck.deckId)}
-							>
-								<span className={styles.deckInfo}>
-									<span className={styles.deckName}>{deck.name}</span>
-									<span className={styles.deckMeta}>
-										{deck.language.display}, {deck.cardCount} cards
+				<ul className={styles.deckGrid}>
+					{visibleDecks.map((deck, index) => {
+						const color = getDeckColor(deck.deckId);
+						const { symbol, title } = splitDeckName(deck.name);
+						return (
+							<li key={deck.deckId} className={styles.deckCell}>
+								<button
+									type="button"
+									className={`${styles.deckCard} ${deck.isSelected ? styles.selected : ""}`}
+									style={{
+										background: color,
+										color: getReadableTextColor(color),
+										rotate: deck.isSelected
+											? index % 2 === 0
+												? "-2deg"
+												: "2deg"
+											: undefined,
+									}}
+									aria-pressed={deck.isSelected}
+									aria-label={`${title}, ${deck.cardCount} cards, ${deck.language.display}`}
+									onClick={() => handleToggleDeck(deck.deckId)}
+								>
+									{symbol && (
+										<span className={styles.deckSymbol} aria-hidden="true">
+											{symbol}
+										</span>
+									)}
+									<span className={styles.deckTitle} lang={deck.language.code === "es" ? "es" : "en"}>
+										{title}
 									</span>
-								</span>
-								<span className={styles.check} aria-hidden="true">
-									{deck.isSelected && <Icon name="check" size={20} />}
-								</span>
-							</button>
-						</li>
-					))}
+									<span className={styles.samples} aria-hidden="true">
+										{deckManager.getSampleCards(deck.deckId).map((word, i) => (
+											<span key={`${i}-${word}`} className={styles.sample}>
+												<span className={styles.sampleText}>{word}</span>
+											</span>
+										))}
+									</span>
+									<span className={styles.deckMeta}>
+										<span>{deck.cardCount} cards</span>
+										<span>{deck.language.display}</span>
+									</span>
+									{deck.isSelected && (
+										<span className={styles.check} aria-hidden="true">
+											<Icon name="check" size={18} strokeWidth={3} />
+										</span>
+									)}
+								</button>
+							</li>
+						);
+					})}
 				</ul>
 			) : (
 				<div className={ui.emptyState}>

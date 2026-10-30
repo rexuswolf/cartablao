@@ -3,73 +3,176 @@
 	gap: 8px;
 }
 
-.deckList {
+/* Decks as playing cards */
+.deckGrid {
 	list-style: none;
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 18px 16px;
+	padding: 6px 4px 4px;
+}
+
+.deckCell {
 	display: flex;
-	flex-direction: column;
-	gap: 10px;
-}
-
-.deckItem {
-	display: flex;
-	align-items: center;
-	gap: 14px;
-	width: 100%;
-	min-height: 68px;
-	padding: 12px 14px;
-	border: var(--border);
-	border-radius: var(--radius-sm);
-	background: var(--white);
-	text-align: left;
-	transition: transform 80ms ease, box-shadow 80ms ease;
-}
-
-.deckItem:active {
-	transform: scale(0.98);
-}
-
-.selected {
-	box-shadow: var(--shadow-sm);
-	background: #fff3c4;
-}
-
-.deckInfo {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	flex: 1;
 	min-width: 0;
 }
 
-.deckName {
-	font-size: 17px;
-	font-weight: 700;
-	overflow-wrap: anywhere;
+.deckCard {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	width: 100%;
+	/* Portrait like a card; grows taller when a long name needs more lines */
+	aspect-ratio: 3 / 4;
+	padding: 14px 12px 12px;
+	border: var(--border);
+	border-radius: 18px;
+	text-align: left;
+	container-type: inline-size;
+	transition: transform 120ms ease, box-shadow 120ms ease, rotate 120ms ease;
+}
+
+.deckCard:active {
+	transform: scale(0.97);
+}
+
+.selected {
+	transform: translateY(-4px);
+	box-shadow: 6px 6px 0 var(--ink);
+}
+
+.selected:active {
+	transform: translateY(-4px) scale(0.97);
+}
+
+.deckTitle {
+	font-family: var(--font-display);
+	/* Scales with the card so long words like "Impressions" fit on one line */
+	font-size: clamp(14px, 10cqi, 20px);
+	line-height: 1.08;
+	/* Break between words; hyphenate only words too long for the card */
+	overflow-wrap: break-word;
+	hyphens: auto;
+}
+
+/* The deck's emoji, shown like a playing card's suit */
+.deckSymbol {
+	font-size: 20px;
+	line-height: 1;
+	margin-bottom: -4px;
+}
+
+.samples {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	margin-top: auto;
+}
+
+.sample {
+	padding: 5px 8px;
+	border: 2px solid var(--ink);
+	border-radius: 9px;
+	background: var(--white);
+	color: var(--ink);
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.25;
+}
+
+/* Up to two lines, then trimmed */
+.sampleText {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	overflow: hidden;
+	overflow-wrap: break-word;
+}
+
+.sample:nth-child(odd) {
+	rotate: -1.5deg;
+}
+
+.sample:nth-child(even) {
+	rotate: 1deg;
 }
 
 .deckMeta {
-	font-size: 14px;
-	color: var(--ink-soft);
+	display: flex;
+	justify-content: space-between;
+	gap: 6px;
+	font-size: 12px;
+	font-weight: 600;
 }
 
 .check {
+	position: absolute;
+	top: -12px;
+	right: -10px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 32px;
-	height: 32px;
-	flex-shrink: 0;
+	width: 34px;
+	height: 34px;
 	border: var(--border-thin);
 	border-radius: 50%;
-	background: var(--white);
-}
-
-.selected .check {
 	background: var(--sun);
+	color: var(--ink);
 }
 
 .actions {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 8px;
+}
+
+/* Footer: the decks in the game, then the confirm button */
+.footer {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.inGame {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-width: 0;
+}
+
+.miniStack {
+	position: relative;
+	width: 70px;
+	height: 50px;
+	flex-shrink: 0;
+}
+
+.miniCard {
+	position: absolute;
+	top: 3px;
+	width: 34px;
+	height: 44px;
+	border: var(--border-thin);
+	border-radius: 7px;
+}
+
+.inGameText {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.inGameNames {
+	font-size: 16px;
+	font-weight: 700;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.inGameCount {
+	font-size: 14px;
+	color: var(--ink-soft);
 }
